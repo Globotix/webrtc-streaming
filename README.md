@@ -6,13 +6,13 @@ A multiplayer connect4 game from the [Python Websocket tutorial](https://websock
 ```sh
 
 #Create heroku ap
-heroku create <app_name>
+heroku create globotix-webrtc-streaming
 
 #Push up to heroku git repo and server
 git push heroku
 
 #Test websocket server with interactive client
-python -m websockets wss://connect4-ws-tutorial.herokuapp.com/
+python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
 ```
 
 # Quick Start
@@ -27,7 +27,7 @@ python -m websockets wss://connect4-ws-tutorial.herokuapp.com/
 
 ## Heroku hosting
 1. Open the webpage
-https://johntgz.github.io/connect4-ws-tutorial/
+https://globotix.github.io/globotix-webrtc-streaming/
 
 # Testing Heroku deployment
 1. Test websocket server with interactive client

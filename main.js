@@ -6,8 +6,8 @@ let watch_url = "";
 //Client that receives messages and manipulates the UI based on the message
 
 function getWebSocketServer() {
-    if (window.location.host === "johntgz.github.io") {
-      return "wss://connect4-ws-tutorial.herokuapp.com/";
+    if (window.location.host === "globotix.github.io") {
+      return "wss://globotix-webrtc-streaming.herokuapp.com/";
     } else if (window.location.host === "localhost:8000") {
       return "ws://localhost:8001/";
     } else {

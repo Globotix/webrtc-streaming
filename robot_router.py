@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-server_b_port = 9001
+# local_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"
+local_ws_url = "ws://localhost:8001/"
 
 webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 
@@ -19,6 +20,38 @@ async def error(websocket, message):
     }
     await websocket.send(json.dumps(event))
 
+
+async def listenClientA():
+    global websocket_a
+    """
+    Client: Listens to 8001
+    1. Receives message from [A-Server/ webrtc_ros server]
+    2. Sends message to [B-Server]
+    """
+
+    print("listenClientA started!")
+
+    #ping_timeout is set to None so that it is kept alive
+    async for websocket in websockets.connect(webrtc_ros_url, ping_timeout=None):
+        try: 
+            websocket_a = websocket
+            print("[A-Client] Connected to: ", webrtc_ros_url)
+
+            # Listen to messages from A
+            async for message in websocket_a:
+                event = json.loads(message)
+                print("[A-Client] receives from [A-server]: ", event["type"])
+
+                if websocket_b != None:
+                    event["from_client"] = "False"
+                    print("[B-Client] sends to [B-server]: ", event["type"])
+                    print(event)
+                    await websocket_b.send(json.dumps(event))
+
+        except websockets.ConnectionClosed as ws_err:
+            print(f"Exception connecting to {webrtc_ros_url}: {ws_err}")
+            continue
+
 async def listenClientB():
     global websocket_b
     """
@@ -29,10 +62,11 @@ async def listenClientB():
 
     print("listenClientB started!")
 
-    async for websocket in websockets.connect("ws://localhost:"+str(server_b_port)):
+    #ping_timeout is set to None so that it is kept alive
+    async for websocket in websockets.connect(local_ws_url, ping_timeout=None):
         try: 
             websocket_b = websocket
-            print("[B-Client] Connected to: ", "ws://localhost:"+str(server_b_port))
+            print("[B-Client] Connected to: ", local_ws_url)
 
             async for message in websocket_b:
                 event = json.loads(message)
@@ -64,45 +98,9 @@ async def listenClientB():
                     print("[B-Client]: Message missing the 'from_client' key, not sending a message")
 
         except websockets.ConnectionClosed as ws_err:
-            print(f"Exception connecting to {server_b_port}: {ws_err}")
+            print(f"Exception connecting to {local_ws_url}: {ws_err}")
             continue
 
-async def listenClientA():
-    global websocket_a
-    """
-    Client: Listens to 8001
-    1. Receives message from [A-Server/ webrtc_ros server]
-    2. Sends message to [B-Server]
-    """
-
-    print("listenClientA started!")
-
-    async for websocket in websockets.connect(webrtc_ros_url):
-        try: 
-            websocket_a = websocket
-            print("[A-Client] Connected to: ", webrtc_ros_url)
-
-            # Listen to messages from A
-            async for message in websocket_a:
-                event = json.loads(message)
-                print("[A-Client] receives from [A-server]: ", event["type"])
-
-                if websocket_b != None:
-                    event["from_client"] = "False"
-                    print("[B-Client] sends to [B-server]: ", event["type"])
-                    print(event)
-                    await websocket_b.send(json.dumps(event))
-
-                # async for websocket2 in websockets.connect("ws://localhost:"+str(server_b_port)):
-                #     try :
-                #         print("[A-Client] sends to [B-server] ", event)
-                #         await websocket2.send(json.dumps(event))
-                #     except websockets.ConnectionClosed as ws2_err:
-                #         print(f"Exception connecting to {server_b_port}: {ws2_err}")
-                #         continue
-        except websockets.ConnectionClosed as ws_err:
-            print(f"Exception connecting to {webrtc_ros_url}: {ws_err}")
-            continue
 
 
 async def main():
@@ -117,18 +115,6 @@ async def main():
     
     for task in pending:
         task.cancel()
-
-
-
-    # listenClientB_task = asyncio.create_task(listenClientB())
-    # done, pending = await asyncio.wait(
-    #     [listenClientB_task],
-    #     return_when=asyncio.FIRST_COMPLETED,
-    # )
-
-    # for task in pending:
-    #     task.cancel()
-
 
 
 if __name__ == "__main__":

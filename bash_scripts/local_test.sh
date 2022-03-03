@@ -27,13 +27,16 @@ tmux new-session -s "$sn" -n state_supervisor -d
 tmux split-window -dh $TMUX_PANE
 tmux split-window -v $TMUX_PANE
 tmux split-window -v -t 0.2 $TMUX_PANE
+tmux split-window -v -t $TMUX_PANE
 
-tmux send-keys -t 0.0 "cd ~/testbed/webrtc-streaming/ && python3 a.py" C-m
+tmux send-keys -t 0.0 "cd ~/testbed/webrtc-streaming/ && python3 app.py" C-m
 
-tmux send-keys -t 0.1 "cd ~/testbed/webrtc-streaming/ && python3 -m http.server" C-m
+tmux send-keys -t 0.1 "cd ~/testbed/webrtc-streaming/ && python3 robot_router.py" C-m
 
 tmux send-keys -t 0.2 "roslaunch webrtc_ros rs_webrtc_ros.launch" C-m
 
-tmux send-keys -t 0.3 "python3 -m websockets ws://0.0.0.0:9090/webrtc" 
+tmux send-keys -t 0.3 "cd ~/testbed/webrtc-streaming/ && python3 -m http.server" C-m
+
+tmux send-keys -t 0.4 "python3 -m websockets ws://0.0.0.0:9090/webrtc" 
 
 tmux -2 attach-session -d

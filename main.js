@@ -3,7 +3,7 @@
 let web_ui_url = "https://globotix.github.io/webrtc-streaming/";
 let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/";
 // let local_ws_url = "ws://0.0.0.0:9090/webrtc";
-let local_ws_url = "ws://0.0.0.0:9001";
+let local_ws_url = "ws://0.0.0.0:8001";
 
 
 const servers = {
@@ -216,7 +216,7 @@ askOfferButton.onclick = async () => {
     type: "configure",
     actions: [{type: "add_video_track", 
               stream_id: streamID.value,
-              id: "015" ,
+              id: streamID.value ,
               src: "ros_image:/mjpeg_cam/image_repub" }],
   };
   console.log("Configure/add_video_track")
@@ -227,82 +227,3 @@ askOfferButton.onclick = async () => {
 // Send configure/Add stream -> Get offer -> Send Answer -> 
 // configure/add_video_track -> Get offer -> Get ICE Candidate -> Send Answer -> Send ICE Candidate 
 
-
-
-
-
-
-
-
-
-
-
-
-// 3. Answer the call with the unique ID
-// answerButton.onclick = async () => {
-
-// };
-
-
-
-// // 1. Setup media sources
-
-// webcamButton.onclick = async () => {
-
-//   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-//   remoteStream = new MediaStream();
-
-//   // localStream.getTracks().forEach(track => {
-//   //     peerConnection.addTrack(track, localStream);
-//   // });
-
-//   webcamVideo.srcObject = localStream;
-//   remoteVideo.srcObject = remoteStream;
-
-//   // callButton.disabled = false;
-//   // answerButton.disabled = false;
-//   // webcamButton.disabled = true;
-// };
-
-// // 2. Create an offer
-// callButton.onclick = async () => {
-//   console.log("Call button pressed");
-
-//   //TODO: Send ICE candidates to answerer
-//   peer_connection.onicecandidate = (event) => {
-//     console.log("sending ice candidate");
-//     event.candidate && websocket.send(JSON.stringify(event.candidate));
-//   };
-  
-//   console.log("Creating offer");
-
-//   // Create offer
-//   const offerDescription = await peer_connection.createOffer();
-//   await peer_connection.setLocalDescription(offerDescription);
-//   console.log("Offer created");
-
-//   const offer = {
-//     type: offerDescription.type,
-//     sdp: offerDescription.sdp,
-//   };
-
-//   //TODO: Send offer to answerer
-//   websocket.send(JSON.stringify(offer));
-//   console.log("Offer Sent");
-
-//   // //TODO: Listen for remote answer from answerer
-//   // if (!peer_connection.currentRemoteDescription ) {
-//   //   const answerDescription = new RTCSessionDescription(data.answer);
-//   //   peer_connection.setRemoteDescription(answerDescription);
-//   // }
-
-//   // console.log("got remote answer from answerer");
-
-//   //TODO: When answered, add candidate to peer connection
-//   // if (change.type === 'added') {
-//   //   const candidate = new RTCIceCandidate(...);
-//   //   peer_connection.addIceCandidate(candidate);
-//   // }
-
-//   hangupButton.disabled = false;
-// };

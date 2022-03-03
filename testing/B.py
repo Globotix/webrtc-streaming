@@ -56,3 +56,6 @@ async def main():
         await stop
 
 asyncio.run(main())
+
+# {"hi": "bazinga"}
+

@@ -1,134 +1,307 @@
-import { createBoard, playMove } from "./connect4.js";
+// import './style.css';
 
-let join_url = "";
-let watch_url = "";
+let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/";
+// let local_ws_url = "ws://0.0.0.0:9090/webrtc";
+let local_ws_url = "ws://0.0.0.0:9001";
 
-//Client that receives messages and manipulates the UI based on the message
+
+const servers = {
+  iceServers: [
+    {
+      urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'],
+    },
+  ],
+  iceCandidatePoolSize: 10,
+};
+
+// Global State
+const peer_connection = new RTCPeerConnection(servers);
+let localStream = null;
+let remoteStream = null;
+let websocket = null;
+let answer_sdp = null;
+let offer_sdp = null;
+let ice_candidate = null;
+
+// HTML elements
+// const webcamButton = document.getElementById('webcamButton');
+const addStreamButton = document.getElementById('addStreamButton')
+const removeStreamButton = document.getElementById('removeStreamButton')
+
+const webcamVideo = document.getElementById('webcamVideo');
+const callButton = document.getElementById('callButton');
+const askOfferButton = document.getElementById('askOfferButton');
+
+const offer_id = document.getElementById('offerID');
+const answerButton = document.getElementById('answerButton');
+const remoteVideo = document.getElementById('remoteVideo');
+const hangupButton = document.getElementById('hangupButton');
 
 function getWebSocketServer() {
-    if (window.location.host === "globotix.github.io") {
-      return "wss://globotix-webrtc-streaming.herokuapp.com/";
-    } else if (window.location.host === "localhost:8000") {
-      return "ws://localhost:8001/";
-    } else {
-      throw new Error(`Unsupported host: ${window.location.host}`);
-    }
+  if (window.location.host === "globotix.github.io") {
+    return global_ws_url;
+  } else if (window.location.host === "0.0.0.0:8000" || window.location.host === "localhost:8000") {
+    return local_ws_url;
+  } else {
+    throw new Error(`Unsupported host: ${window.location.host}`);
+  }
 }
 
-
 window.addEventListener("DOMContentLoaded", () => {
-  // Initialize the UI.
-  const board = document.querySelector(".board");
-  createBoard(board);
   //Open the websocket connection and register event handlers
-  const websocket = new WebSocket(getWebSocketServer());
-  initGame(websocket);
-  receiveMoves(board, websocket);
-  sendMoves(board, websocket); //event listener to send play msg over WS when UI is clicked
+  websocket = new WebSocket(getWebSocketServer());
+  wsCallback(websocket);
+  peerConnectionICECallback(websocket);
 
-  document.getElementById("join_game_button").addEventListener("click", joinGameButton, false)
-  document.getElementById("watch_game_button").addEventListener("click", watchGameButton, false)
+  //Enable/disable buttons
+  // callButton.disabled = false;
+  // answerButton.disabled = false;
+  // webcamButton.disabled = true;
+  askOfferButton.disabled = false;
+
+  peer_connection.addEventListener('track', async (event) => {
+      const [remoteStream] = event.streams;
+      remoteVideo.srcObject = remoteStream;
+  });
 
 });
 
-function initGame(websocket) {
-    // Send an "init" event according to who is connecting.
-    websocket.addEventListener("open", ()=> {
-        const params = new URLSearchParams(window.location.search);
+//Listens to message coming in on websockets
+function wsCallback(websocket){
+  websocket.addEventListener("message", async ({data}) => {
+    const event = JSON.parse(data);
 
-        let event = {type: "init"};
+    if (event.from_client == "True"){
+      console.error("Message not meant for browser client")
+      return;
+    }
 
-        if (params.has("join")){
-            //second player joins an existing game
-            event.join = params.get("join")
-        } 
-        else if (params.has("watch")){
-            //Spectators joins an existing game
-            event.watch = params.get("watch")
-        }   
-        else {
-            //First player starts a new game
-        }
-        websocket.send(JSON.stringify(event));
-    });
-}
+    console.log(`[wsCallback] Client received WS Message of type: ${event.type}`);
 
+    switch (event.type){
 
-function sendMoves(board, websocket) {
+    case "offer":
+      //Of the format: 
+      //{"type": "offer", 
+      // "sdp": <string>}
+
+      const offerDescription = event;
+
+      peer_connection.setRemoteDescription(new RTCSessionDescription(offerDescription));
+      const answerDescription = await peer_connection.createAnswer();
+      await peer_connection.setLocalDescription(answerDescription);
     
-    // When clicking a column, send a "play" event for a move in that column.
-    board.addEventListener("click", ({target}) => {
-        const column = target.dataset.column;
-        //ignore clicks outside a column
-        if (column === undefined){
-            return;
-        }
-        const event = {
-            type: "play",
-            column: parseInt(column, 10),
-        };
-        websocket.send(JSON.stringify(event));
-    });
+      const answer = {
+        from_client: "True",
+        type: "answer",
+        sdp: answerDescription.sdp
+      }
+
+      console.log(`[wsCallback] Sent answer to Caller`);
+
+      //Send answer to caller
+      websocket.send(JSON.stringify(answer));
+
+      break;
+
+    case "ice_candidate":
+      //Of the format: 
+      //{"type": "ice_candidate", 
+      // "sdp_mid": <string>, 
+      // "sdp_mline_index": <int>, 
+      // "candiate": <string>,  
+      // }
+
+      const ice_candidate = {
+        type: event.type,
+        candidate: event.candidate,
+        sdpMid: event.sdp_mid,
+        sdpMLineIndex: event.sdp_mline_index,
+      };
+
+      //Add candidate to peer connection
+      try {
+        console.log("[wsCallback] Received Remote Ice candidate!");
+        peer_connection.addIceCandidate(new RTCIceCandidate(ice_candidate));
+      }
+      catch (e){
+        console.error('[wsCallback] Error adding received Remote ice candidate', e);
+      }
+      break;
+    
+    case "answer":
+      console.log("[wsCallback] Received answer, ignoring")
+      break;
+    default:
+      console.error(`[wsCallback] Unrecognized Message of type ${event.type}`);
+    }
+     
+  });
 }
 
-function showMessage(message) {
-    //When playMove() modifies the state of the board, the browser renders changes asynchronously. 
-    //Conversely, window.alert() runs synchronously and blocks rendering while the alert is visible.
-    //We use timeout because
-    //If you called window.alert() immediately after playMove(), the browser could display 
-    //the alert before rendering the move. You could get a “Player red wins!” alert without seeing red’s last move.
-    window.setTimeout(() => window.alert(message), 50);
+//Listens for local ICE Candidates on the local RTCPeerConnection
+function peerConnectionICECallback(websocket){
+  peer_connection.addEventListener('icecandidate', event => {
+
+    if (event.candidate) {
+      // console.log("[peerConnectionICECallback] Received Ice candidate!")
+      // console.log(JSON.stringify(event.candidate))
+
+      // {"candidate":"candidate:4260616049 1 udp 2113937151 f300c8fb-9f2e-4cba-b591-7fb32d6bdbbf.
+      // local 35096 typ host generation 0 
+      // ufrag QF1E network-cost 999",
+      // "sdpMid":"video",
+      // "sdpMLineIndex":0}
+
+      const ice_candidate = {
+        from_client: "True",
+        type: "ice_candidate",
+        candidate: event.candidate.candidate,
+        sdp_mid: event.candidate.sdpMid,
+        sdp_mline_index: event.candidate.sdpMLineIndex,
+      };
+
+      // console.log(JSON.stringify(ice_candidate))
+
+      console.log("[peerConnectionICECallback] Sent Ice candidate!")
+      websocket.send(JSON.stringify(ice_candidate));
+    }
+  });
+
+  peer_connection.addEventListener('connectionstatechange', event => {
+    if (peer_connection.connectionState === 'connected') {
+      console.log("Peers connected!");
+    }
+});
+
 }
+
+addStreamButton.onclick = async () => {
+  if (streamID.value == "" || streamID.value == null){
+    console.log("Please input stream ID if you want to remove stream");
+    return;
+  }
+
+  const cfg_add_stream = {
+    from_client: "True",
+    type: "configure",
+    actions: [{type: "add_stream", 
+              id: streamID.value }],
+  };
+  console.log("Configure/add_stream")
+  websocket.send(JSON.stringify(cfg_add_stream));
+}
+
+removeStreamButton.onclick = async () => {
+  if (streamID.value == "" || streamID.value == null){
+    console.log("Please input stream ID if you want to remove stream");
+    return;
+  }
+
+  const cfg_remove_stream = {
+    from_client: "True",
+    type: "configure",
+    actions: [{type: "remove_stream", 
+              id: streamID.value }],
+  };
+  console.log("Configure/remove_stream")
+  websocket.send(JSON.stringify(cfg_remove_stream));
+}
+
+askOfferButton.onclick = async () => {
+
+  const cfg_add_video_track = {
+    from_client: "True",
+    type: "configure",
+    actions: [{type: "add_video_track", 
+              stream_id: streamID.value,
+              id: "015" ,
+              src: "ros_image:/mjpeg_cam/image_repub" }],
+  };
+  console.log("Configure/add_video_track")
+  websocket.send(JSON.stringify(cfg_add_video_track))
+
+}
+
+// Send configure/Add stream -> Get offer -> Send Answer -> 
+// configure/add_video_track -> Get offer -> Get ICE Candidate -> Send Answer -> Send ICE Candidate 
+
+
+
+
+
+
+
+
+
+
+
+
+// 3. Answer the call with the unique ID
+// answerButton.onclick = async () => {
+
+// };
+
+
+
+// // 1. Setup media sources
+
+// webcamButton.onclick = async () => {
+
+//   localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+//   remoteStream = new MediaStream();
+
+//   // localStream.getTracks().forEach(track => {
+//   //     peerConnection.addTrack(track, localStream);
+//   // });
+
+//   webcamVideo.srcObject = localStream;
+//   remoteVideo.srcObject = remoteStream;
+
+//   // callButton.disabled = false;
+//   // answerButton.disabled = false;
+//   // webcamButton.disabled = true;
+// };
+
+// // 2. Create an offer
+// callButton.onclick = async () => {
+//   console.log("Call button pressed");
+
+//   //TODO: Send ICE candidates to answerer
+//   peer_connection.onicecandidate = (event) => {
+//     console.log("sending ice candidate");
+//     event.candidate && websocket.send(JSON.stringify(event.candidate));
+//   };
   
-function receiveMoves(board, websocket) {
-    websocket.addEventListener("message", ({ data }) => {
-        const event = JSON.parse(data);
+//   console.log("Creating offer");
 
-        console.log(`receiveMoves: ${event.type}`);
+//   // Create offer
+//   const offerDescription = await peer_connection.createOffer();
+//   await peer_connection.setLocalDescription(offerDescription);
+//   console.log("Offer created");
 
-        switch (event.type) {
-        case "init":
-            // Create link for inviting the second player.
-            if (event.hasOwnProperty("join")){
-                document.querySelector(".join").href = "?join=" + event.join;
-                
-                document.getElementById("join_url").innerHTML = "join_url";
-                document.getElementById("join_url").href = "?join=" + event.join;
-                join_url = "?join=" + event.join
-            }
-            if (event.hasOwnProperty("watch")){
-                document.getElementById("watch_url").innerHTML = "watch_url";
-                document.getElementById("watch_url").href = "?watch=" + event.watch;
-                watch_url = "?watch=" + event.watch
-            }
-            break;
+//   const offer = {
+//     type: offerDescription.type,
+//     sdp: offerDescription.sdp,
+//   };
 
-        case "play":
-            // Update the UI with the move.
-            playMove(board, event.player, event.column, event.row);
-            break;
-        case "win":
-            showMessage(`Player ${event.player} wins!`);
-            // No further messages are expected; close the WebSocket connection.
-            websocket.close(1000);
-            break;
-        case "error":
-            showMessage(event.message);
-            break;
-        default:
-            throw new Error(`Unsupported event type: ${event.type}.`);
-        }
-    });
-}
+//   //TODO: Send offer to answerer
+//   websocket.send(JSON.stringify(offer));
+//   console.log("Offer Sent");
 
-function joinGameButton(){
-    console.log("Join game button pressed! Opening new tab");
+//   // //TODO: Listen for remote answer from answerer
+//   // if (!peer_connection.currentRemoteDescription ) {
+//   //   const answerDescription = new RTCSessionDescription(data.answer);
+//   //   peer_connection.setRemoteDescription(answerDescription);
+//   // }
 
-    window.open(join_url);
-}
+//   // console.log("got remote answer from answerer");
 
-function watchGameButton(){
-    console.log("Watch game button pressed! Opening new tab");
+//   //TODO: When answered, add candidate to peer connection
+//   // if (change.type === 'added') {
+//   //   const candidate = new RTCIceCandidate(...);
+//   //   peer_connection.addIceCandidate(candidate);
+//   // }
 
-    window.open(watch_url);
-}
+//   hangupButton.disabled = false;
+// };

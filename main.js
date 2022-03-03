@@ -1,5 +1,6 @@
 // import './style.css';
 
+let web_ui_url = "https://globotix.github.io/webrtc-streaming/";
 let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/";
 // let local_ws_url = "ws://0.0.0.0:9090/webrtc";
 let local_ws_url = "ws://0.0.0.0:9001";

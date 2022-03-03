@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-server_a_port = 8001
 server_b_port = 9001
 
 import asyncio
@@ -47,12 +46,14 @@ async def main():
     stop = loop.create_future()
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
-    port = int(os.environ.get("PORT", server_b_port)) #get port from environment variable
+    port = int(os.environ.get("PORT", "8001")) #get port from environment variable
 
-    print("[B] Hosting on port: ",server_b_port)
+    print("[B] Hosting on port: ",port)
 
-    async with websockets.serve(handler, "", server_b_port) as websocket: #serve a websocket
+    async with websockets.serve(handler, "", port): #serve a websocket
         #A Future represents an eventual result of an asynchronous operation. Not thread-safe.
         await stop
 
-asyncio.run(main())
+if __name__ == "__main__":
+    #creates an asyncio event loop, runs the main() coroutine, and shuts down the loop.
+    asyncio.run(main())

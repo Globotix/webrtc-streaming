@@ -28,7 +28,7 @@ tmux split-window -dh $TMUX_PANE
 tmux split-window -v $TMUX_PANE
 tmux split-window -v -t 0.2 $TMUX_PANE
 
-tmux send-keys -t 0.0 "cd ~/testbed/webrtc-streaming/ && python3 app.py" C-m
+tmux send-keys -t 0.0 "cd ~/testbed/webrtc-streaming/ && python3 a.py" C-m
 
 tmux send-keys -t 0.1 "cd ~/testbed/webrtc-streaming/ && python3 -m http.server" C-m
 

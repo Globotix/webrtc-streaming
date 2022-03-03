@@ -117,7 +117,7 @@ to get the video from.
 
 ## Heroku hosting
 1. Open the webpage
-https://globotix.github.io/globotix-webrtc-streaming/
+https://globotix.github.io/webrtc-streaming/
 
 # Testing Heroku deployment
 1. Test websocket server with interactive client

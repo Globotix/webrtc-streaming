@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-server_b_port = 9001
-
 import asyncio
 import websockets
 import json

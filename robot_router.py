@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# local_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"
-local_ws_url = "ws://localhost:8001/"
+local_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"
+# local_ws_url = "ws://localhost:8001/"
 
 webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 

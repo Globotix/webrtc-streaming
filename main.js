@@ -1,9 +1,10 @@
 // import './style.css';
 
 let web_ui_url = "https://globotix.github.io/webrtc-streaming/";
-let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/";
-// let local_ws_url = "ws://0.0.0.0:9090/webrtc";
-let local_ws_url = "ws://0.0.0.0:8001";
+
+let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"; //If using web
+let local_ws_url = "ws://0.0.0.0:8001";  //If using local_test
+let webrtc_ros_ws_url = "ws://0.0.0.0:9090/webrtc"; //If only using local_test_simple: browser and webrtc_ros server
 
 
 const servers = {
@@ -41,8 +42,9 @@ const hangupButton = document.getElementById('hangupButton');
 function getWebSocketServer() {
   if (window.location.host === "globotix.github.io") {
     return global_ws_url;
-  } else if (window.location.host === "0.0.0.0:8000" || window.location.host === "localhost:8000") {
+  } else if (window.location.host === "localhost:8000") {
     return local_ws_url;
+    // return webrtc_ros_ws_url;
   } else {
     throw new Error(`Unsupported host: ${window.location.host}`);
   }
@@ -73,7 +75,7 @@ function wsCallback(websocket){
     const event = JSON.parse(data);
 
     if (event.from_client == "True"){
-      console.error("Message not meant for browser client")
+      // console.error("Message not meant for browser client")
       return;
     }
 
@@ -189,7 +191,7 @@ addStreamButton.onclick = async () => {
     actions: [{type: "add_stream", 
               id: streamID.value }],
   };
-  console.log("Configure/add_stream")
+  console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
   websocket.send(JSON.stringify(cfg_add_stream));
 }
 
@@ -205,7 +207,7 @@ removeStreamButton.onclick = async () => {
     actions: [{type: "remove_stream", 
               id: streamID.value }],
   };
-  console.log("Configure/remove_stream")
+  console.log("[removeStreamButton.onclick()] Sending Configure/remove_stream")
   websocket.send(JSON.stringify(cfg_remove_stream));
 }
 
@@ -219,9 +221,8 @@ askOfferButton.onclick = async () => {
               id: streamID.value ,
               src: "ros_image:/mjpeg_cam/image_repub" }],
   };
-  console.log("Configure/add_video_track")
+  console.log("[askOfferButton.onclick()] Sending Configure/add_video_track")
   websocket.send(JSON.stringify(cfg_add_video_track))
-
 }
 
 // Send configure/Add stream -> Get offer -> Send Answer -> 

@@ -155,3 +155,5 @@ python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
 
 
 
+# TODO
+1. Add config file to store all the URLs and constants so that the python and js can refer to them

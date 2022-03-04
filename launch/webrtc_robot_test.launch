@@ -3,6 +3,8 @@
   <arg name="port" default="9091"/>
   <arg name="use_ip_camera" default="true"/>
   <arg name="use_back_camera" default="false"/>
+  <arg name="topic_in" default="/ip_front/image_raw" />
+  <arg name="topic_out" default="/ip_front/image_raw_repub" />
 
   <!-- ICE: STUN/TURN Server -->
   <node name="ice_server_provider" pkg="webrtc_ros" type="ice_server_service.py">
@@ -23,11 +25,12 @@
   </node>
 
   <!-- <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/> -->
+  <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/>
 
   <node name="webrtc_router" pkg="webrtc_router" type="robot_router.py" output="screen">
     <rosparam command="load" file="$(find webrtc_router)/config/config.yaml" />
   </node>
-  
+
   <!-- IP Cameras -->
   <group if="$(arg use_ip_camera)">
     <include file="$(find flexa_bringup)/launch/includes/ip_camera.launch.xml">

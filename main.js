@@ -1,9 +1,8 @@
 // Config 1: Webbrowser to webrtc_ros direct
-// let local_ws_url = "ws://0.0.0.0:9090/webrtc"; //If only using local_test_simple: browser and webrtc_ros server
+// let local_ws_url = "ws://0.0.0.0:9090/webrtc";
 
 // Config 2: Webbrowser to local websocket broadcaster
-// let local_ws_url = "ws://0.0.0.0:8001";  //If using local_test
-let local_ws_url = "wss://globotix-stream.herokuapp.com/";  //If using local_test
+let local_ws_url = "ws://0.0.0.0:8001";  
 
 // Config 3: Web Configs
 let global_ws_url = "wss://globotix-stream.herokuapp.com/"; //If using web

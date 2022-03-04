@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 #Config 1: Local configs
-# local_ws_url = "ws://localhost:8001/"
+# ws_server_url = "ws://localhost:8001/"
 # webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 
 #Config 2: Web Configs
-local_ws_url = "wss://globotix-stream.herokuapp.com/"
+ws_server_url = "wss://globotix-stream.herokuapp.com/"
 webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 
 websocket_a = None
@@ -66,10 +66,10 @@ async def listenClientB():
     print("listenClientB started!")
 
     #ping_timeout is set to None so that it is kept alive
-    async for websocket in websockets.connect(local_ws_url, ping_timeout=None):
+    async for websocket in websockets.connect(ws_server_url, ping_timeout=None):
         try: 
             websocket_b = websocket
-            print("[B-Client] Connected to: ", local_ws_url)
+            print("[B-Client] Connected to: ", ws_server_url)
 
             async for message in websocket_b:
                 event = json.loads(message)
@@ -101,7 +101,7 @@ async def listenClientB():
                     print("[B-Client]: Message missing the 'from_client' key, not sending a message")
 
         except websockets.ConnectionClosed as ws_err:
-            print(f"Exception connecting to {local_ws_url}: {ws_err}")
+            print(f"Exception connecting to {ws_server_url}: {ws_err}")
             continue
 
 

@@ -6,7 +6,7 @@ import asyncio, websockets, json
 import rospy
 
 #Global Constants to be assigned at runtime
-ws_server_url,  = ""
+ws_server_url = ""
 ws_webrtc_url = ""
 
 ws_webrtc = None

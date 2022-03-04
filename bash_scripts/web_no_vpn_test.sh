@@ -21,7 +21,7 @@ tmux split-window -v -t 0.2 $TMUX_PANE
 tmux send-keys -t 0.0 "google-chrome https://globotix.github.io/webrtc_router/" C-m
 
 #Launch webrtc server and robot_router
-tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test_web.launch" C-m
+tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_robot_test.launch" C-m
 
 #For Websocket debugging
 tmux send-keys -t 0.2 "python3 -m websockets wss://globotix-stream.herokuapp.com/" 

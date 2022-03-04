@@ -14,10 +14,10 @@
 ##########################
 
 #var for session name
-sn=local_test
+sn=local_router_test
 
 # Start the session and name it according to the variable $sn, name the window etc
-tmux new-session -s "$sn" -n local_test -d
+tmux new-session -s "$sn" -n local_router_test -d
 
 # If -d is given, the session does not make the new window the current window
 # -v: vertical split
@@ -36,7 +36,7 @@ tmux send-keys -t 0.0 "roscd webrtc_router/scripts && python3 ws_broadcaster.py"
 tmux send-keys -t 0.1 "roscd webrtc_router/scripts && python3 robot_router.py" C-m
 
 #Launch webrtc_ros server
-tmux send-keys -t 0.2 "roslaunch webrtc_ros webrtc_ros_test.launch" C-m
+tmux send-keys -t 0.2 "roslaunch webrtc_router webrtc_test.launch" C-m
 
 #Host the webpage
 tmux send-keys -t 0.3 "roscd webrtc_router && python3 -m http.server" C-m

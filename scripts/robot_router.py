@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
-local_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"
+#Config 1: Local configs
 # local_ws_url = "ws://localhost:8001/"
+# webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 
+#Config 2: Web Configs
+local_ws_url = "wss://globotix-stream.herokuapp.com/"
 webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
 
 websocket_a = None

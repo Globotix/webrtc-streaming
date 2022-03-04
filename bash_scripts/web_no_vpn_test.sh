@@ -1,23 +1,12 @@
 #!/bin/bash
 
-#This is script is for testing goal manager flex
-
-##########################
-###### Useful flags ######
-##########################
-## -d detached mode    ###
-## -v split vertically ###
-## -h split horizontally #
-## -s name the session ###
-## -n name the window ####
-## C-m enter a command ###
-##########################
+#This is script is for testing video streaming with a cloud hosted websocket broadcaster and webpage
 
 #var for session name
-sn=state_supervisor
+sn=web_no_vpn_test
 
 # Start the session and name it according to the variable $sn, name the window etc
-tmux new-session -s "$sn" -n state_supervisor -d
+tmux new-session -s "$sn" -n web_no_vpn_test -d
 
 # If -d is given, the session does not make the new window the current window
 # -v: vertical split
@@ -32,12 +21,12 @@ tmux split-window -v -t 0.2 $TMUX_PANE
 tmux send-keys -t 0.0 "google-chrome https://globotix.github.io/webrtc_router/" C-m
 
 #Run the robot router
-tmux send-keys -t 0.1 "roscd webrtc_router/scripts && robot_router.py" C-m
+tmux send-keys -t 0.1 "roscd webrtc_router/scripts && python3 robot_router.py" C-m
 
 #Launch webrtc server
-tmux send-keys -t 0.2 "roslaunch webrtc_ros webrtc_ros_test.launch" C-m
+tmux send-keys -t 0.2 "roslaunch webrtc_router webrtc_test.launch" C-m
 
 #For Websocket debugging
-tmux send-keys -t 0.3 "python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/" 
+tmux send-keys -t 0.3 "python3 -m websockets wss://globotix-stream.herokuapp.com/" 
 
 tmux -2 attach-session -d

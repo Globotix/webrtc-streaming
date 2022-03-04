@@ -32,13 +32,13 @@ rosrun webrtc_router web_no_vpn_test.sh
 ### 4.1.1 (Only for First Time) Host Websocket broadcaster on Heroku
 ```sh
 #Create heroku app
-heroku create globotix-webrtc-streaming
+heroku create globotix-stream
 
 #Push up to heroku git repo and server
 git push heroku
 
 #Test websocket server with interactive client
-python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
+python -m websockets wss://globotix-stream.herokuapp.com/
 ```
 
 ### 4.1.2 Host your webpage (index.html) on github Pages
@@ -49,12 +49,12 @@ Go figure
 ### 4.1.3 Testing Heroku deployment
 1. Test websocket server with interactive client
 ```sh
-python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
+python -m websockets wss://globotix-stream.herokuapp.com/
 ```
 
 2. Send a JSON 
 ```sh
-Connected to wss://globotix-webrtc-streaming.herokuapp.com/.
+Connected to wss://globotix-stream.herokuapp.com/.
 > {"type" : "configure", "actions": [{"type": "add_stream", "id": "flexa_robot" }]}
 < 
 Connection closed: 1000 (OK).
@@ -173,3 +173,4 @@ At this point, the peers should be connected, and the **Answerer** should receiv
 
 # 7 TODO
 1. Add config file to store all the URLs and constants so that the python and js can refer to them
+2. CHange webrtc server port to 9091

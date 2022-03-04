@@ -1,1 +1,1 @@
-web: python app.py
+web: python scripts/ws_broadcaster.py

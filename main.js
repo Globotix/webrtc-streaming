@@ -1,6 +1,6 @@
 // import './style.css';
 
-let web_ui_url = "https://globotix.github.io/webrtc-streaming/";
+let web_ui_url = "https://globotix.github.io/webrtc_router/";
 
 let global_ws_url = "wss://globotix-webrtc-streaming.herokuapp.com/"; //If using web
 let local_ws_url = "ws://0.0.0.0:8001";  //If using local_test
@@ -225,6 +225,4 @@ askOfferButton.onclick = async () => {
   websocket.send(JSON.stringify(cfg_add_video_track))
 }
 
-// Send configure/Add stream -> Get offer -> Send Answer -> 
-// configure/add_video_track -> Get offer -> Get ICE Candidate -> Send Answer -> Send ICE Candidate 
 

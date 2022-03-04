@@ -1,143 +1,37 @@
-# 1. Introduction
-Acts as a signalling server for WebRTC. Relays SDP and ICE Candidates between caller and answerers
+# 1 Introduction
+Acts as a signalling server for WebRTC. 
+Relays SDP and ICE Candidates between caller and answerers.
 
 
-# 2. Connection with webrtc_ros
-
-```
-python -m websockets ws://0.0.0.0:9090/webrtc
-```
-
-## 2.1 Sending ICE Candidates
-ICE candidate messages are sent with ICE candidates that are used by WebRTC to establish connections. Messages take the form:
-```json
-{ "type": "ice_candidate", "sdp_mid": <string>, "sdp_mline_index": <int>, "candiate": <string>}
-```
-
-## 2.2 SDP Offer and Answer
-Offer and Answer messages are exchanged by WebRTC to describe the capabilities and streams of the clients. They take the form:
-```json
-{ "type": "offer" | "answer",
-  "sdp": <string>
-}
-```
-
-## 2.3 Configure Message
-Configure messages allow the clients to request actions of the other client. They can be used to ask a client to add a stream that is a republishing of a ROS topic, remove a stream, etc. Once a configure message is sent the receiver responds with an SDP offer, which is responded to with a SDP answer. Configure messages take the form:
-```json
-{ "type": "configure",
-  "actions": [<action>]
-}
-```
-An action is of the form:
-```json
-{ "type": <string> }
-```
-
-Action Types:
- * **add_stream** - Tell the remote client start a new stream
- * **remove_stream** - Tell the remote client to remove a stream
- * **add_video_track** - Add a video track to a remote client's stream
- * **add_audio_track** - Add a audio track to a remote client's stream
- * **expect_stream** - Tell the remote client to expect a stream
- * **expect_video_track** - Tell the remote client to expect a video track
-    and what to do with the track it receives
-
-### 2.3.1 add_stream
-
-```json
-{ "type": "add_stream",
-  "id": <string>
-}
-
-//Example
-{"type" : "configure", "actions": [{"type": "add_stream", "id": "flexa_robot" }]} 
-```
-
-### 2.3.2 remove_stream
-
-```json
-{ "type": "remove_stream",
-  "id": <string>
-}
-```
-
-### 2.3.3 add_video_track
-
-```json
-{ "type": "add_video_track",
-  "stream_id": <string>,
-  "id": <string>,
-  "src": <string>
-}
-```
-
-### 2.3.3 add_audio_track
-
-```json
-{ "type": "add_audio_track",
-  "stream_id": <string>,
-  "id": <string>,
-  "src": <string>
-}
-```
-
-When adding the stream the remote client uses the src field to determine where
-to get the video from.
-
-### 2.3.4 expect_stream
-
-```json
-{ "type": "expect_stream",
-  "id": <string>
-}
-```
-
-### 2.3.5 expect_video_track
-
-```json
-{ "type": "expect_video_track",
-  "stream_id": <string>,
-  "id": <string>,
-  "dest": <string>
-}
-```
-
-
-
-# Quick Start
-
-## Local 
-
-1. In terminal 1 run:
-`python -m http.server`
-
-2. In terminal 2:
-`python app.py`
-
-## Heroku hosting
-1. Open the webpage
-https://globotix.github.io/webrtc-streaming/
-
-# Testing Heroku deployment
-1. Test websocket server with interactive client
+# 2 First time set-up
 ```sh
-python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
+#Install dependencies
+pip install -r requirements.txt
 ```
 
-2. Send a JSON 
+# 3 Quick Start
 ```sh
-Connected to wss://globotix-webrtc-streaming.herokuapp.com/.
-> {"type": "init"}
-< {"type": "init", "join": "54ICxFae_Ip7TJE2", "watch": "634w44TblL5Dbd9a"}
-Connection closed: 1000 (OK).
+#Test 1: with locally hosted webpage and webrtc_ros only
+rosrun webrtc_router local_simple_test.sh
+
+#Test 2: with locally hosted webpage, robot_router.py, app.py (websocket broadcaster) and webrtc_ros only
+rosrun webrtc_router local_router_test.sh
+
+#Test 3: with cloud hosted webpage, robot_router.py, app.py (cloud hosted websocket broadcaster) and webrtc_ros only
+rosrun webrtc_router web_no_vpn_test.sh
+
+#Test 4: with cloud hosted webpage, websocket server, and webrtc_ros
+rosrun webrtc_router web_no_vpn_test.sh
+
 ```
 
+# 4 Deployment
 
-# Deployment to Heroku
+## 4.1 Deployment Method 1: Web without VPN 
+
+### 4.1.1 (Only for First Time) Host Websocket broadcaster on Heroku
 ```sh
-
-#Create heroku ap
+#Create heroku app
 heroku create globotix-webrtc-streaming
 
 #Push up to heroku git repo and server
@@ -147,13 +41,135 @@ git push heroku
 python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
 ```
 
-# Issues
+### 4.1.2 Host your webpage (index.html) on github Pages
+```sh
+Go figure
+```
+
+### 4.1.3 Testing Heroku deployment
+1. Test websocket server with interactive client
+```sh
+python -m websockets wss://globotix-webrtc-streaming.herokuapp.com/
+```
+
+2. Send a JSON 
+```sh
+Connected to wss://globotix-webrtc-streaming.herokuapp.com/.
+> {"type" : "configure", "actions": [{"type": "add_stream", "id": "flexa_robot" }]}
+< 
+Connection closed: 1000 (OK).
+```
+
+
+## 4.2 Deployment Method 2: Web with VPN 
+
+### 4.2.1 Host cloud_router.py on AWS
+1. 
+```
+
+```
+### 4.2.2 Host your webpage (index.html) somewhere
+```sh
+Go figure
+```
+
+
+
+# 5 How to interface with webRTC ROS
+Experienced users refer to `WEBRTC_ROS_SIGNALING_PROTOCOL.md` in the `webrtc_ros` package.
+
+## Glossary:
+1. **Caller** This is the webrtc_ros server
+2. **Answerer** Anyone who wants to view the video stream from webrtc_ros server
+   
+The messages that are exchanged between the answerer and caller will be detailed below replete with examples so as to provide a reference for setting up your own answering client to webrtc_ros.
+
+## 5.1 Adding a stream
+
+1. **Answerer** sends request to **Caller** for offer : 
+```json
+{
+    type: "configure",
+    actions: [{ type: "add_stream", 
+                id: <int> }],
+}
+```
+
+2. **Answerer** receives offer from **Caller**:
+```json
+{ 
+    type: "offer",
+    sdp: <string>
+}
+```
+
+3. **Answerer** creates localDescription and sends answer:
+```json
+{ 
+    type: "answer",
+    sdp: <string>
+}
+```
+
+
+## 5.2 Adding video track
+1. **Answerer** sends request to **Caller** for offer : 
+```json
+{
+    type: "configure",
+    actions: [{ type: "add_video_track", 
+                stream_id: <int>,
+                id: <int> ,
+                src: "ros_image:/mjpeg_cam/image_repub" }],
+}
+```
+
+2. **Answerer** receives offer from **Caller**:
+```json
+{ 
+    type: "offer",
+    sdp: <string>
+}
+```
+
+3. **Answerer** receives ICE Candidate from **Caller**:
+Receive the ICE Candidate and add to peer connection
+**IMPORTANT: Note that the json keys for the ice_candidate from the webRTC Javascript API differs from what is sent/received from webrtc_ros, there is a need to process them properly**
+
+```json
+{
+    type: "ice_candidate", 
+    sdp_mid: <string>, 
+    sdp_mline_index: <int>, 
+    candiate: <string>,  
+}
+```
+
+4. **Answerer** creates localDescription and sends answer to **Caller**:
+```json
+{ 
+    type: "answer",
+    sdp: <string>
+}
+```
+
+5. **Answerer** sends ICE Candidate to **Caller**:
+Sends the ICE Candidate to the **Caller** on generation after creating the localDescription
+```json
+{
+    type: "ice_candidate", 
+    sdp_mid: <string>, 
+    sdp_mline_index: <int>, 
+    candiate: <string>,  
+}
+```
+
+At this point, the peers should be connected, and the **Answerer** should receive your video stream if added to the peerconnection and video html element.
+
+# 6 Issues
 1. Possible sources of error when testing locally, please ensure that you are accessing your local server via `http://localhost:8000/` and not `http://0.0.0.0:8000/` to avoid errors due to security, as we are not hosting it on https.
 
 
 
-
-
-
-# TODO
+# 7 TODO
 1. Add config file to store all the URLs and constants so that the python and js can refer to them

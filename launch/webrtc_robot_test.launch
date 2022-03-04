@@ -1,8 +1,8 @@
 <launch>
   <!-- Argument(s) -->
   <arg name="port" default="9091"/>
-  <arg name="use_ip_camera" default="false"/>
-  <arg name="rqt_image_view" default="true"/>
+  <arg name="use_ip_camera" default="true"/>
+  <arg name="use_back_camera" default="false"/>
 
   <!-- ICE: STUN/TURN Server -->
   <node name="ice_server_provider" pkg="webrtc_ros" type="ice_server_service.py">
@@ -27,11 +27,6 @@
     <include file="$(find flexa_bringup)/launch/includes/ip_camera.launch.xml">
       <arg name="use_back_camera" value ="$(arg use_back_camera)"/>
     </include>
-  </group>
-
-  <!-- RQT Image View -->
-  <group if="$(arg rqt_image_view)">
-    <node pkg="rqt_image_view" type="rqt_image_view" name="image_view" args="/ip_front/image_raw/theora"/>
   </group>
 
 </launch>

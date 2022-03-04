@@ -32,7 +32,7 @@ tmux split-window -v -t 0.2 $TMUX_PANE
 tmux send-keys -t 0.0 "google-chrome https://globotix.github.io/webrtc-streaming/" C-m
 
 #Run the robot router
-tmux send-keys -t 0.1 "python3 ../robot_router.py" C-m
+tmux send-keys -t 0.1 "roscd webrtc_router && robot_router.py" C-m
 
 #Launch webrtc server
 tmux send-keys -t 0.2 "roslaunch webrtc_ros rs_webrtc_ros.launch" C-m

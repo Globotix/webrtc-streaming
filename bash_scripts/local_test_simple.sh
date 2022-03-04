@@ -17,7 +17,7 @@ tmux split-window -dh $TMUX_PANE
 tmux split-window -v $TMUX_PANE
 
 #Host the webpage
-tmux send-keys -t 0.0 "cd ~/testbed/webrtc-streaming/ && python3 -m http.server" C-m
+tmux send-keys -t 0.0 "roscd webrtc_router && python3 -m http.server" C-m
 
 #Launch webrtc_ros server
 tmux send-keys -t 0.1 "roslaunch webrtc_ros rs_webrtc_ros.launch" C-m

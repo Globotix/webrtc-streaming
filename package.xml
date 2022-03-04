@@ -2,7 +2,7 @@
 <package format="2">
   <name>webrtc_router</name>
   <version>0.0.0</version>
-  <description>The webrtc_router package</description>
+  <description>Routes websocket connections between webrtc_ros server and the client</description>
   <maintainer email="johntan@tglobotix.sg">john tan</maintainer>x
   <license>TODO</license>
 

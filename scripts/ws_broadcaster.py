@@ -31,7 +31,6 @@ async def handler(websocket):
 
     await asyncio.gather(
         consumer_handler(websocket, connected),
-        # producer_handler(websocket)
     )
 
 async def main():

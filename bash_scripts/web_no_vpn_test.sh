@@ -20,13 +20,10 @@ tmux split-window -v -t 0.2 $TMUX_PANE
 #Open the webpage hosted on a cloud
 tmux send-keys -t 0.0 "google-chrome https://globotix.github.io/webrtc_router/" C-m
 
-#Run the robot router
-tmux send-keys -t 0.1 "roscd webrtc_router/scripts && python3 robot_router.py" C-m
-
-#Launch webrtc server
-tmux send-keys -t 0.2 "roslaunch webrtc_router webrtc_test.launch" C-m
+#Launch webrtc server and robot_router
+tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test_web.launch" C-m
 
 #For Websocket debugging
-tmux send-keys -t 0.3 "python3 -m websockets wss://globotix-stream.herokuapp.com/" 
+tmux send-keys -t 0.2 "python3 -m websockets wss://globotix-stream.herokuapp.com/" 
 
 tmux -2 attach-session -d

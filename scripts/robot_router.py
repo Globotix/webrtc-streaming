@@ -1,77 +1,65 @@
 #!/usr/bin/env python
 
-#Config 1: Local configs
-# ws_server_url = "ws://localhost:8001/"
-# webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
+import sys, signal
+import asyncio, websockets, json
 
-#Config 2: Web Configs
-ws_server_url = "wss://globotix-stream.herokuapp.com/"
-webrtc_ros_url = "ws://0.0.0.0:9090/webrtc"
+import rospy
 
-websocket_a = None
-websocket_b = None
+#Global Constants to be assigned at runtime
+ws_server_url,  = ""
+ws_webrtc_url = ""
 
-import asyncio
-import websockets
-import json
+ws_webrtc = None
+ws_server = None
 
-
-async def error(websocket, message):
-    event = {
-        "type": "error",
-        "message": message,
-    }
-    await websocket.send(json.dumps(event))
-
-
-async def listenClientA():
-    global websocket_a
+async def listenWebrtcRos():
+    global ws_webrtc
     """
-    Client: Listens to 8001
+    Client: Listens to webrtc_ros websocket server
     1. Receives message from [A-Server/ webrtc_ros server]
     2. Sends message to [B-Server]
     """
 
-    print("listenClientA started!")
+    print("listenWebrtcRos started!")
 
     #ping_timeout is set to None so that it is kept alive
-    async for websocket in websockets.connect(webrtc_ros_url, ping_timeout=None):
+    async for websocket in websockets.connect(ws_webrtc_url, ping_timeout=None):
         try: 
-            websocket_a = websocket
-            print("[A-Client] Connected to: ", webrtc_ros_url)
+            ws_webrtc = websocket
+            print("[A-Client] Connected to: ", ws_webrtc_url)
 
             # Listen to messages from A
-            async for message in websocket_a:
+            async for message in ws_webrtc:
                 event = json.loads(message)
                 print("[A-Client] receives from [A-server]: ", event["type"])
 
-                if websocket_b != None:
+                if ws_server != None:
                     event["from_client"] = "False"
                     print("[B-Client] sends to [B-server]: ", event["type"])
                     print(event)
-                    await websocket_b.send(json.dumps(event))
+                    await ws_server.send(json.dumps(event))
 
         except websockets.ConnectionClosed as ws_err:
-            print(f"Exception connecting to {webrtc_ros_url}: {ws_err}")
+            print(f"Exception connecting to {ws_webrtc_url}: {ws_err}")
             continue
 
-async def listenClientB():
-    global websocket_b
+async def listenServer():
+    global ws_server
     """
-    Client: Listens to 9001
-    1. Receives message from [B-Server]
-    2. Sends message to [A-Server/ webrtc_ros server]
+    Client: Listens to Websocker Server (typically hosted on the cloud)
+    1. Receives message from [WS-Server]
+    2. Sends message to [ webrtc_ros server]
     """
 
-    print("listenClientB started!")
+    print("listenServer started!")
 
     #ping_timeout is set to None so that it is kept alive
     async for websocket in websockets.connect(ws_server_url, ping_timeout=None):
         try: 
-            websocket_b = websocket
+            ws_server = websocket
             print("[B-Client] Connected to: ", ws_server_url)
 
-            async for message in websocket_b:
+            async for message in ws_server:
                 event = json.loads(message)
                 print("[B-Client] receives from [B-server]: ", event["type"])
 
@@ -89,10 +77,10 @@ async def listenClientB():
                                 print("message not meant for client robot")
                                 continue 
 
-                            if websocket_a != None:
+                            if ws_webrtc != None:
                                 del event["from_client"]
                                 print("[A-Client]: sends to [A-Server]")
-                                await websocket_a.send(json.dumps(event))
+                                await ws_webrtc.send(json.dumps(event))
                     else:
                         print("[B-Client]: Message not from client")
                         #Ignore
@@ -104,22 +92,39 @@ async def listenClientB():
             print(f"Exception connecting to {ws_server_url}: {ws_err}")
             continue
 
-
-
 async def main():
-    listenClientA_task = asyncio.create_task(listenClientA())
-    listenClientB_task = asyncio.create_task(listenClientB())
+    global ws_server_url, ws_webrtc_url
 
+    rospy.init_node('robot_router')
+
+    rospy.loginfo("Webrtc router started up!")
+
+    ws_server_url = rospy.get_param("~ws_server_url", "ws://localhost:8001/")
+    ws_webrtc_url = rospy.get_param("~ws_webrtc_url", "ws://0.0.0.0:9091/webrtc")
+
+    listenWebrtcRos_task = asyncio.create_task(listenWebrtcRos())
+    listenServer_task = asyncio.create_task(listenServer())
+
+    #Runs both listeners in async fashion, without one blocking the other
     done, pending = await asyncio.wait(
-        [listenClientA_task, 
-        listenClientB_task],
+        [listenWebrtcRos_task, 
+        listenServer_task],
         return_when=asyncio.FIRST_COMPLETED,
     )
     
     for task in pending:
         task.cancel()
 
+    while (not rospy.is_shutdown()):
+        rospy.spin()    
+
+def keyboard_interrupt_handler(signal, frame):
+    print("Keyboard interrupt detected. Exiting gracefully...")
+    sys.exit(0)
 
 if __name__ == "__main__":
+
+    signal.signal(signal.SIGINT, keyboard_interrupt_handler)
+
     #creates an asyncio event loop, runs the main() coroutine, and shuts down the loop.
     asyncio.run(main()) #entry point

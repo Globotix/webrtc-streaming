@@ -32,16 +32,13 @@ tmux split-window -v -t $TMUX_PANE
 #Host the "cloud" web socket server
 tmux send-keys -t 0.0 "roscd webrtc_router/scripts && python3 ws_broadcaster.py" C-m
 
-#Run the router to communicate with the "cloud" web socket server
-tmux send-keys -t 0.1 "roscd webrtc_router/scripts && python3 robot_router.py" C-m
-
-#Launch webrtc_ros server
-tmux send-keys -t 0.2 "roslaunch webrtc_router webrtc_test.launch" C-m
+#Launch webrtc_ros server and robot_router
+tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test_web.launch" C-m
 
 #Host the webpage
-tmux send-keys -t 0.3 "roscd webrtc_router && python3 -m http.server" C-m
+tmux send-keys -t 0.2 "roscd webrtc_router && python3 -m http.server" C-m
 
 #For debugging directly
-tmux send-keys -t 0.4 "python3 -m websockets ws://0.0.0.0:9090/webrtc" 
+tmux send-keys -t 0.3 "python3 -m websockets ws://0.0.0.0:9090/webrtc" 
 
 tmux -2 attach-session -d

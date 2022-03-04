@@ -47,8 +47,12 @@
   <node pkg="image_transport" type="republish" name="image_transport_repub" 
     args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/>
 
-  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node">
+  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node" output="screen">
     <param name="port" value="9091"/>
+  </node>
+
+  <node name="webrtc_router" pkg="webrtc_router" type="robot_router.py" output="screen">
+    <rosparam command="load" file="$(find webrtc_router)/config/config.yaml" />
   </node>
 
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find web_video_server )/rviz/video_streaming.rviz"/>

@@ -1,11 +1,11 @@
 // Config 1: Webbrowser to webrtc_ros direct
-// let local_ws_url = "ws://0.0.0.0:9090/webrtc";
+// let webrtc_ws_url = "ws://0.0.0.0:9090/webrtc";
 
 // Config 2: Webbrowser to local websocket broadcaster
-let local_ws_url = "ws://0.0.0.0:8001";  
+let ws_server_url = "ws://0.0.0.0:8001";  
 
 // Config 3: Web Configs
-let global_ws_url = "wss://globotix-stream.herokuapp.com/"; //If using web
+let ws_server_cloud_url = "wss://globotix-stream.herokuapp.com/"; //If using web
 
 const servers = {
   iceServers: [
@@ -41,9 +41,9 @@ const hangupButton = document.getElementById('hangupButton');
 
 function getWebSocketServer() {
   if (window.location.host === "globotix.github.io") {
-    return global_ws_url;
+    return ws_server_cloud_url;
   } else if (window.location.host === "localhost:8000") {
-    return local_ws_url;
+    return ws_server_url;
   } else {
     throw new Error(`Unsupported host: ${window.location.host}`);
   }

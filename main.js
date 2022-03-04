@@ -218,7 +218,7 @@ askOfferButton.onclick = async () => {
     actions: [{type: "add_video_track", 
               stream_id: streamID.value,
               id: streamID.value ,
-              src: "ros_image:/ip_front/image_raw" }],
+              src: "ros_image:/ip_front/image_raw_repub"}],
   };
   console.log("[askOfferButton.onclick()] Sending Configure/add_video_track")
   websocket.send(JSON.stringify(cfg_add_video_track))

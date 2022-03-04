@@ -22,6 +22,12 @@
     <param name="port" value="$(arg port)"/>
   </node>
 
+  <!-- <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/> -->
+
+  <node name="webrtc_router" pkg="webrtc_router" type="robot_router.py" output="screen">
+    <rosparam command="load" file="$(find webrtc_router)/config/config.yaml" />
+  </node>
+  
   <!-- IP Cameras -->
   <group if="$(arg use_ip_camera)">
     <include file="$(find flexa_bringup)/launch/includes/ip_camera.launch.xml">

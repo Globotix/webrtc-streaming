@@ -40,13 +40,17 @@ const remoteVideo = document.getElementById('remoteVideo');
 const hangupButton = document.getElementById('hangupButton');
 
 function getWebSocketServer() {
+  let ws_url;
   if (window.location.host === "globotix.github.io") {
-    return ws_server_cloud_url;
+    ws_url =  ws_server_cloud_url;
   } else if (window.location.host === "localhost:8000") {
-    return ws_server_url;
+    ws_url =  ws_server_url;
   } else {
     throw new Error(`Unsupported host: ${window.location.host}`);
   }
+
+  console.log(`Connecting to ws: ${ws_url}`)
+  return ws_url;
 }
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -211,6 +215,10 @@ removeStreamButton.onclick = async () => {
 }
 
 askOfferButton.onclick = async () => {
+  if (cameraTopic.value == "" || cameraTopic.value == null){
+    console.log("Please input camera ROS Topic if you want to add video stream");
+    return;
+  }
 
   const cfg_add_video_track = {
     from_client: "True",
@@ -218,7 +226,7 @@ askOfferButton.onclick = async () => {
     actions: [{type: "add_video_track", 
               stream_id: streamID.value,
               id: streamID.value ,
-              src: "ros_image:/ip_front/image_raw_repub"}],
+              src: "ros_image:"+ cameraTopic.value}], // Example ros_image:/ip_front/image_raw_repub
   };
   console.log("[askOfferButton.onclick()] Sending Configure/add_video_track")
   websocket.send(JSON.stringify(cfg_add_video_track))

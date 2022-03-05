@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Globotix Streaming</title>
+
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+  <body>
+    <div class="videos">
+      <span>
+        <h3>Remote Stream</h3>
+        <video id="remoteVideo" autoplay playsinline></video>
+      </span>
+    </div>
+
+
+    <h2>Add stream</h2>
+    <input id="streamID" />
+    <button id="addStreamButton">Add Stream</button>
+
+    <h2>Add Video Stream</h2>
+    <p>Example Camera Topic Input: "/ip_front/image_raw_repub"</p>
+    <input id="cameraTopic"/>
+    <button id="askOfferButton" disabled>Add Video Stream</button>
+
+    <h2>Remove stream</h2>
+    <button id="removeStreamButton">Remove stream</button>
+
+    <script type="module" src="/js/main.js"></script>
+
+  </body>
+</html>

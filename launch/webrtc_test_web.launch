@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-
   <arg name="device_name" default="/dev/video0"/>
   <arg name="topic_in" default="/mjpeg_cam/image" />
   <arg name="topic_out" default="/mjpeg_cam/image_repub" />

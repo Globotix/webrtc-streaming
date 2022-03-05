@@ -20,6 +20,6 @@ tmux split-window -v $TMUX_PANE
 tmux send-keys -t 0.0 "roscd webrtc_router && python3 -m http.server" C-m
 
 #Launch webrtc_ros server
-tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test.launch" C-m
+tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test_local.launch" C-m
 
 tmux -2 attach-session -d

@@ -20,8 +20,8 @@ rosrun webrtc_router local_router_test.sh
 #Test 3: with cloud hosted webpage, robot_router.py, app.py (cloud hosted websocket broadcaster) and webrtc_ros only
 rosrun webrtc_router web_no_vpn_test.sh
 
-#Test 4: with cloud hosted webpage, websocket server, and webrtc_ros
-rosrun webrtc_router web_no_vpn_test.sh
+#Test 4: with local nodejs server, and webrtc_ros
+rosrun webrtc_router local_nodejs_test.sh
 
 ```
 

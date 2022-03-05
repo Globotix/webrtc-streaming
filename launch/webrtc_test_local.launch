@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-
   <arg name="device_name" default="/dev/video0"/>
   <arg name="topic_in" default="/mjpeg_cam/image" />
   <arg name="topic_out" default="/mjpeg_cam/image_repub" />
@@ -47,9 +46,15 @@
   <node pkg="image_transport" type="republish" name="image_transport_repub" 
     args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/>
 
-  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node">
+  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node" output="screen">
     <param name="port" value="9091"/>
   </node>
+
+  <!-- <node name="webrtc_router" pkg="webrtc_router" type="robot_router.py" output="screen">
+    <rosparam command="load" file="$(find webrtc_router)/config/config.yaml" />
+    <param name="ws_server_url" value="ws://localhost:8001/" />
+    <param name="ws_webrtc_url" value="ws://localhost:9091/webrtc" />
+  </node> -->
 
   <node pkg="rviz" type="rviz" name="rviz" required="true" args="-d $(find web_video_server )/rviz/video_streaming.rviz"/>
 

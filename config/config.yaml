@@ -11,8 +11,8 @@ http_client_ui_url: "https://globotix.github.io/webrtc_router/"
 
 #Set-up 1: Cloud
 ws_server_url: "wss://globotix-stream.herokuapp.com/"
-ws_webrtc_url: "ws://0.0.0.0:9091/webrtc"
+ws_webrtc_url: "ws://localhost:9091/webrtc"
 
 #Set-up 2: Local
 # ws_server_url: "ws://localhost:8001/"
-# ws_webrtc_url: "ws://0.0.0.0:9091/webrtc"
+# ws_webrtc_url: "ws://localhost:9091/webrtc"

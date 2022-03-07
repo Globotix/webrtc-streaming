@@ -1,13 +1,13 @@
 <launch>
   <!-- Argument(s) -->
-  <arg name="webrtc_port" default="8013"/>
-  <arg name="use_ip_camera" default="true"/>
-  <arg name="use_usb_camera" default="true"/>
-  <arg name="use_back_camera" default="false"/>
+  <arg name="webrtc_port" default="8013" />
+  <arg name="use_ip_camera" default="true" />
+  <arg name="use_rgb_camera" default="true" />
+  <arg name="use_back_camera" default="false" />
   <arg name="ip_topic_in" default="/ip_front/image_raw" />
   <arg name="ip_topic_out" default="/ip_front/image_raw_repub" />
-  <!-- <arg name="usb_topic_in" default="/ip_front/image_raw" />
-  <arg name="usb_topic_out" default="/ip_front/image_raw_repub" /> -->
+  <arg name="rgb_topic_in" default="/rgb_front/usb_cam/image_raw" />
+  <arg name="rgb_topic_out" default="/rgb_front/usb_cam/image_raw_repub" />
 
   <!-- ICE: STUN/TURN Server -->
   <node name="ice_server_provider" pkg="webrtc_ros" type="ice_server_service.py">
@@ -17,33 +17,32 @@
     <rosparam param="turn_server_uris">
         []
     </rosparam>
-    <param name="turn_server_creds_uri" value=""/>
-    <param name="turn_server_creds_username" value=""/>
-    <param name="turn_server_creds_password" value=""/>
+    <param name="turn_server_creds_uri" value="" />
+    <param name="turn_server_creds_username" value="" />
+    <param name="turn_server_creds_password" value="" />
   </node>
 
   <!-- WebRTC ROS -->
-  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node">
-    <param name="port" value="$(arg webrtc_port)"/>
+  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node" output="screen">
+    <param name="port" value="$(arg webrtc_port)" />
   </node>
 
-  <!-- Republish image for consumption by WebRTC Server -->
-  <!-- <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/> -->
-
   <!-- IP Cameras -->
-  <group ns="ip" if="$(arg use_ip_camera)">
+  <group ns="ip_front" if="$(arg use_ip_camera)">
     <include file="$(find flexa_bringup)/launch/includes/ip_camera.launch.xml">
-      <arg name="use_back_camera" value ="$(arg use_back_camera)"/>
+      <arg name="use_back_camera" value="$(arg use_back_camera)" />
     </include>
-    <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg topic_in) out:=$(arg topic_out) _image_transport:=compressed"/>
+    <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg ip_topic_in) out:=$(arg ip_topic_out) _image_transport:=compressed" />
   </group>
 
   <!-- HD Cameras -->
-  <group if="$(arg use_usb_camera)">
+  <group if="$(arg use_rgb_camera)">
     <include file="$(find flexa_bringup)/launch/includes/surveillance_camera.launch.xml">
-      <arg name="framerate" value="15"/>
-      <arg name="front_video_stream" value="video0"/>
+      <arg name="use_mjpeg" value="false"/>
+      <arg name="framerate" value="30" />
+      <arg name="front_video_stream" value="video0" />
     </include>
+    <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg rgb_topic_in) out:=$(arg rgb_topic_out) _image_transport:=compressed" />
   </group>
 
 </launch>

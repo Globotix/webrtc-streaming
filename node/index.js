@@ -4,6 +4,7 @@ const path = require('path');
 const config = require('dotenv').config(); //For sourcing .env config file
 
 var express = require('express');
+var http = require('http')
 var app = express();
 app.set('view engine', 'ejs');
 
@@ -43,6 +44,8 @@ app.use(express.urlencoded({ extended: true })); // Parse requests of content-ty
 
 app.get('/', function (req, res){
 
+  console.log(`UI Client with IP Address ${req.ip} is connected`);
+
   addr_info = {aws_ip_addr: aws_ip_addr, 
               robot_ip_addr: robot_ip_addr,
               ws_server_port: String(ws_server_port), 
@@ -67,7 +70,7 @@ app.get('/suck_an_egg', function (req, res){
 ws_router_server.on('connection', function connection(ws) {
 
   //Connection to server can tested with "python3 -m websockets ws://localhost:7071"
-  console.log(`[WS Router Server] Client with connected websocket port ${ws_server_port}`);
+  console.log(`[WS Router Server] Client connected to websocket port ${ws_server_port}`);
 
   ws.on('message', function message(message) {
     const [err, msg] = safeJsonParse(message);
@@ -95,8 +98,9 @@ function connectToWebrtcServer() {
 
     if (err) {
       console.log('[WS WebRTC client] Failed to parse JSON: ' + err.message);
-      // connection.send(JSON.stringify({error: "Failed to parse JSON, invalid JSON structure, go suck an egg."}));
-    } else {
+      return;
+    } 
+    else {
       console.log('[WS WebRTC client] Received data, relaying to [WS Router clients]: %s', msg);
       ws_router_server.clients.forEach( function each(client) {
         if (client.readyState === WebSocket.OPEN) {
@@ -108,20 +112,19 @@ function connectToWebrtcServer() {
 
   ws_webrtc_client.onclose = function(err) {
     console.log(`[WS WebRTC client] is closed. Attempting reconnection in ${webrtc_conn_timeout} seconds : ${err.reason}`);
-    //WARNING! This won't free up memory but allows the garbage collector to find the deleted objects when the memory is low.
+    //WARNING! Delete won't free up memory but allows the garbage collector to find the deleted objects when the memory is low.
     //Refer to [https://stackoverflow.com/questions/11981634/understanding-object-creation-and-garbage-collection-of-a-nodejs-websocket-serve/11982071#11982071]
     delete ws_webrtc_client; 
 
     setTimeout(function() {
       connectToWebrtcServer();
-    }, webrtc_conn_timeout += 1000);
+    }, webrtc_conn_timeout );
   };
 
   ws_webrtc_client.onerror = function(err) {
     console.error('[WS WebRTC client] encountered error: ', err.message, 'Closing connection');
     ws_webrtc_client.close();
   };
-
 
 }
 
@@ -140,14 +143,6 @@ function safeJsonParse(data){
   }
 }
 
-//Create an IP Address that can be passed
-//via embedded js (EJS) to the rendered html element 
-function createEJSIPAddr(ip){
-  let ip_replaced = ip;
-  // Example: 192.168.1.23 => 192_168_1_23
-  ip_replaced.replace(/./g, "_");
-  return ip_replaced;
-}
 
 ////////////////////
 //Establish Connections

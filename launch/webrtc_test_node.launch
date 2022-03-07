@@ -19,8 +19,9 @@
   </node>
 
   <!-- WebRTC ROS -->
-  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node">
+  <node name="webrtc_server" pkg="webrtc_ros" type="webrtc_ros_server_node"  output="screen">
     <param name="port" value="$(arg webrtc_port)"/>
+    <param name="image_transport" value="raw"/>
   </node>
 
   <!-- Camera driver -->

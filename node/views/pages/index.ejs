@@ -12,23 +12,25 @@
   <body>
     <div class="videos">
       <span>
-        <h3>Remote Stream</h3>
         <video id="remoteVideo" autoplay playsinline></video>
       </span>
     </div>
-
-
-    <h2>Add stream</h2>
+    
+    <!-- <h3>Stream ID</h3>
     <input id="streamID" />
-    <button id="addStreamButton">Add Stream</button>
+    <button id="addStreamButton" >Add Stream</button> -->
 
-    <h2>Add Video Stream</h2>
+    <h3>Add Video Stream</h3>
+    <p>Camera Topic, video stream ID, video track ID</p>
     <p>Example Camera Topic Input: "/ip_front/image_raw_repub", "/mjpeg_cam/image_repub"</p>
-    <input id="cameraTopic"/>
-    <button id="askOfferButton" disabled>Add Video Stream</button>
+    <input id="cameraTopic" value="/mjpeg_cam/image_repub">
+    <input id="videoStreamID" value="client_ui_stream">
+    <input id="videoTrackID" value="front_camera">
+    <button id="getVideoStream" >Get Video Stream</button>
 
-    <h2>Remove stream</h2>
-    <button id="removeStreamButton" disabled>Remove stream</button>
+    <!-- <h3>Remove stream</h3>
+    <button id="removeStreamButton" >Remove stream</button> -->
+
 
     <!-- Add in constants passed down from nodejs -->
     <script>

@@ -23,12 +23,18 @@
     <button id="addStreamButton">Add Stream</button>
 
     <h2>Add Video Stream</h2>
-    <p>Example Camera Topic Input: "/ip_front/image_raw_repub"</p>
+    <p>Example Camera Topic Input: "/ip_front/image_raw_repub", "/mjpeg_cam/image_repub"</p>
     <input id="cameraTopic"/>
     <button id="askOfferButton" disabled>Add Video Stream</button>
 
     <h2>Remove stream</h2>
-    <button id="removeStreamButton">Remove stream</button>
+    <button id="removeStreamButton" disabled>Remove stream</button>
+
+    <!-- Add in constants passed down from nodejs -->
+    <script>
+      const ws_port = <%= ws_server_port %>;
+      const http_port = <%= http_port %>;
+    </script>
 
     <script type="module" src="/js/main.js"></script>
 

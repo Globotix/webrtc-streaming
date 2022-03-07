@@ -8,21 +8,22 @@ var app = express();
 app.set('view engine', 'ejs');
 
 // Constants
-const http_port = process.env.HTTP_PORT || 8002;
-const ws_port = process.env.WS_PORT || 8001;
+const http_port = process.env.HTTP_PORT || 8011;
+const ws_server_port = process.env.WS_SERVER_PORT || 8012;
+const webrtc_server_port = process.env.WEBRTC_SERVER_PORT || 8013;
+
+webrtc_ws_url = 'ws://localhost:' + webrtc_server_port + '/webrtc';
 
 //Set up servers
-
 const ws_router_server = new WebSocket.Server({
-  port: ws_port,
+  port: ws_server_port,
 });
 
 //Set up clients
-
 const ws_webrtc_client = new WebSocketClient();
-let ws_webrtc_connection;
-// const ws_webrtc_client = new WebSocket('ws://localhost:9091/webrtc');
+let ws_webrtc_connection; //Used to send websocket messages from a global scope
 
+//Set up express router
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.use(express.json());                        // Parse requests of content-type - application/json
 app.use(express.urlencoded({ extended: true })); // Parse requests of content-type - appplication/x-www-form-urlencoded
@@ -36,9 +37,8 @@ app.use(express.urlencoded({ extended: true })); // Parse requests of content-ty
  */
 
 app.get('/', function (req, res){
-    res.render('pages/index');
+    res.render('pages/index', {ws_server_port: ws_server_port, http_port: http_port} );
 })
-
 
 app.get('/suck_an_egg', function (req, res){
     const url = req.protocol + '://' + req.get('host') + req.originalUrl;
@@ -54,7 +54,7 @@ app.get('/suck_an_egg', function (req, res){
 
 ws_router_server.on('connection', function connection(ws) {
   //Connection to server can tested with "python3 -m websockets ws://localhost:7071"
-  console.log(`Client with connected websocket port ${ws_port}`);
+  console.log(`Client with connected websocket port ${ws_server_port}`);
 
   ws.on('message', function message(message) {
     const [err, msg] = safeJsonParse(message);
@@ -76,7 +76,7 @@ ws_webrtc_client.on('connectFailed', function(error) {
 })
 
 ws_webrtc_client.on('connect', function(connection) {
-  console.log('WS Client connected to WebRTC Server');
+  console.log(`WS Client connected to WebRTC Server on port ${webrtc_server_port}`);
 
   ws_webrtc_connection = connection;
 
@@ -89,7 +89,7 @@ ws_webrtc_client.on('connect', function(connection) {
   });
 
   connection.on('message', function(message) {
-    const [err, msg] = safeJsonParse(message.utf8Data);
+    const [err, msg] = safeJsonParse(message.utf8Data); 
 
     if (err) {
       console.log('Failed to parse JSON: ' + err.message);
@@ -119,11 +119,14 @@ function safeJsonParse(data){
   }
 }
 
-ws_webrtc_client.connect('ws://localhost:9091/webrtc');
+////////////////////
+//Establish Connections
+////////////////////
 
+ws_webrtc_client.connect(webrtc_ws_url);
 
 app.listen(http_port, () => {
-    console.log(`webrtc_router listening on port ${http_port}`)
-    console.log(`websocket server on port ${ws_port}`)
+    console.log(`webrtc_router HTTP Server listening on port ${http_port}`)
+    console.log(`websocket server on port ${ws_server_port}`)
 })
 

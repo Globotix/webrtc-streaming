@@ -1,11 +1,6 @@
-// Config 1: Webbrowser to webrtc_ros direct
-// let webrtc_ws_url = "ws://0.0.0.0:9090/webrtc";
-
-// Config 2: Webbrowser to local websocket broadcaster
-let ws_server_url = "ws://0.0.0.0:8001";  
-
-// Config 3: Web Configs
-let ws_server_cloud_url = "wss://globotix-stream.herokuapp.com/"; //If using web
+// Webbrowser to local websocket broadcaster
+let http_server_url = "http://0.0.0.0:" + http_port;  
+let ws_server_url = "ws://0.0.0.0:" + ws_port;  
 
 const servers = {
   iceServers: [
@@ -30,37 +25,15 @@ let ice_candidate = null;
 const addStreamButton = document.getElementById('addStreamButton')
 const removeStreamButton = document.getElementById('removeStreamButton')
 
-const webcamVideo = document.getElementById('webcamVideo');
-const callButton = document.getElementById('callButton');
 const askOfferButton = document.getElementById('askOfferButton');
 
-const offer_id = document.getElementById('offerID');
-const answerButton = document.getElementById('answerButton');
 const remoteVideo = document.getElementById('remoteVideo');
-const hangupButton = document.getElementById('hangupButton');
-
-function getWebSocketServer() {
-  let ws_url;
-  if (window.location.host === "globotix.github.io") {
-    ws_url =  ws_server_cloud_url;
-  } else if (window.location.host === "localhost:8002") {
-    ws_url =  ws_server_url;
-  } else {
-    throw new Error(`Unsupported host: ${window.location.host}`);
-  }
-
-  console.log(`Connecting to ws: ${ws_url}`)
-  return ws_url;
-}
 
 window.addEventListener("DOMContentLoaded", () => {
   //Open the websocket connection and register event handlers
-  websocket = new WebSocket(getWebSocketServer());
+  websocket = new WebSocket(ws_server_url);
   wsCallback(websocket);
   peerConnectionICECallback(websocket);
-
-  //Enable/disable buttons
-  askOfferButton.disabled = false;
 
   peer_connection.addEventListener('track', async (event) => {
       const [remoteStream] = event.streams;
@@ -122,7 +95,7 @@ function wsCallback(websocket){
         peer_connection.addIceCandidate(new RTCIceCandidate(ice_candidate));
       }
       catch (e){
-        console.error('[wsCallback] Error adding received Remote ice candidate', e);
+        console.error('[wsCallback] Error adding received remote ice candidate', e);
       }
       break;
     
@@ -184,7 +157,13 @@ addStreamButton.onclick = async () => {
               id: streamID.value }],
   };
   console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
+
   websocket.send(JSON.stringify(cfg_add_stream));
+
+  //Enable/disable buttons
+  askOfferButton.disabled = false;
+  removeStreamButton.disabled = false;
+
 }
 
 removeStreamButton.onclick = async () => {

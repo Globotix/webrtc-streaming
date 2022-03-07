@@ -88,7 +88,7 @@ Thumbs.db
 
 # track these files, if they exist
 !.editorconfig
-!.env.example
+!.env
 !.gitignore
 !.nvmrc
 !.phpcs.xml.dist

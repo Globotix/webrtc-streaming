@@ -1,6 +1,11 @@
-// Webbrowser to local websocket broadcaster
-let http_server_url = "http://0.0.0.0:" + http_port;  
-let ws_server_url = "ws://0.0.0.0:" + ws_port;  
+//Config 1: Cloud
+let http_server_url = aws_ip_addr + ":" + http_server_port;
+let ws_server_url = "ws://" + aws_ip_addr + ":" + ws_server_port;  
+
+//Config 1: Local
+let http_server_url_local = "localhost" + ":" + http_server_port;
+let ws_server_url_local = "ws://" + "localhost" + ":" + ws_server_port;  
+
 
 const servers = {
   iceServers: [
@@ -24,14 +29,32 @@ let ice_candidate = null;
 // const webcamButton = document.getElementById('webcamButton');
 const addStreamButton = document.getElementById('addStreamButton')
 const removeStreamButton = document.getElementById('removeStreamButton')
-
 const askOfferButton = document.getElementById('askOfferButton');
-
 const remoteVideo = document.getElementById('remoteVideo');
+
+
+
+function getWebSocketServer() {
+  let ws_url;
+  console.log(http_server_url_local)
+  if (window.location.host === http_server_url) {
+    ws_url =  ws_server_url;
+  } else if (window.location.host === http_server_url_local) {
+    ws_url =  ws_server_url_local;
+  } else {
+    throw new Error(`Unsupported host: ${window.location.host}`);
+  }
+
+  console.log(`Connecting to ws: ${ws_url}`)
+  return ws_url;
+}
+
+
+
 
 window.addEventListener("DOMContentLoaded", () => {
   //Open the websocket connection and register event handlers
-  websocket = new WebSocket(ws_server_url);
+  websocket = new WebSocket(getWebSocketServer());
   wsCallback(websocket);
   peerConnectionICECallback(websocket);
 
@@ -102,6 +125,7 @@ function wsCallback(websocket){
     case "answer":
       console.log("[wsCallback] Received answer, ignoring")
       break;
+    
     default:
       console.error(`[wsCallback] Unrecognized Message of type ${event.type}`);
     }

@@ -1,12 +1,10 @@
-// Webbrowser to local websocket broadcaster
-
 //Config 1: Cloud
-let http_server_url = "http://"  + ip_addr + ":" + http_port;
-let ws_server_url = "ws://" + ip_addr + ":" + ws_port;  
+let http_server_url = aws_ip_addr + ":" + http_server_port;
+let ws_server_url = "ws://" + aws_ip_addr + ":" + ws_server_port;  
 
 //Config 1: Local
-let http_server_url_local = "http://"  + "localhost" + ":" + http_port;
-let ws_server_url_local = "ws://" + "localhost" + ":" + ws_port;  
+let http_server_url_local = "localhost" + ":" + http_server_port;
+let ws_server_url_local = "ws://" + "localhost" + ":" + ws_server_port;  
 
 
 const servers = {
@@ -38,6 +36,7 @@ const remoteVideo = document.getElementById('remoteVideo');
 
 function getWebSocketServer() {
   let ws_url;
+  console.log(http_server_url_local)
   if (window.location.host === http_server_url) {
     ws_url =  ws_server_url;
   } else if (window.location.host === http_server_url_local) {
@@ -55,7 +54,7 @@ function getWebSocketServer() {
 
 window.addEventListener("DOMContentLoaded", () => {
   //Open the websocket connection and register event handlers
-  websocket = new WebSocket(ws_server_url);
+  websocket = new WebSocket(getWebSocketServer());
   wsCallback(websocket);
   peerConnectionICECallback(websocket);
 

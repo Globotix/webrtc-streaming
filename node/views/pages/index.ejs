@@ -32,9 +32,14 @@
 
     <!-- Add in constants passed down from nodejs -->
     <script>
-      const ws_port = <%= ws_server_port %>;
-      const http_port = <%= http_server_port %>;
-      const ip_addr = <%= aws_ip_addr %>
+
+      <% if(addr_info) { %>
+        const addr_info_json = <%- JSON.stringify(addr_info) %>;
+        const ws_server_port = addr_info_json.ws_server_port;
+        const http_server_port = addr_info_json.http_server_port;
+        const aws_ip_addr = addr_info_json.aws_ip_addr;
+      <% } %>
+
     </script>
 
     <script type="module" src="/js/main.js"></script>

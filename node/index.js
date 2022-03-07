@@ -7,15 +7,17 @@ var express = require('express');
 var app = express();
 app.set('view engine', 'ejs');
 
+/////////////////
 // Constants
-const robot_ip = process.env.ROBOT_IP_ADDR || "192.168.69.101";
-const aws_ip_addr = process.env.AWS_IP_ADDR || "52.74.175.195";
+/////////////////
+const robot_ip_addr = String(process.env.ROBOT_IP_ADDR) || "192.168.69.101";
+const aws_ip_addr = String(process.env.AWS_IP_ADDR) || "52.74.175.195";
 
 const http_server_port = process.env.HTTP_PORT || 8011;
 const ws_server_port = process.env.WS_SERVER_PORT || 8012;
 const webrtc_server_port = process.env.WEBRTC_SERVER_PORT || 8013;
 
-webrtc_ws_url = 'ws://' + robot_ip + ":" + webrtc_server_port + '/webrtc';
+webrtc_ws_url = 'ws://' + robot_ip_addr + ":" + webrtc_server_port + '/webrtc';
 
 //Set up servers
 const ws_router_server = new WebSocket.Server({
@@ -40,10 +42,14 @@ app.use(express.urlencoded({ extended: true })); // Parse requests of content-ty
  */
 
 app.get('/', function (req, res){
-    res.render('pages/index', 
-              {ws_server_port: ws_server_port, 
-                http_server_port: http_server_port,
-                aws_ip_addr: aws_ip_addr} );
+
+  addr_info = {aws_ip_addr: aws_ip_addr, 
+              robot_ip_addr: robot_ip_addr,
+              ws_server_port: String(ws_server_port), 
+              http_server_port: String(http_server_port)};
+  
+  res.render('pages/index', 
+              {addr_info: addr_info} );
 })
 
 app.get('/suck_an_egg', function (req, res){
@@ -119,47 +125,12 @@ function connectToWebrtcServer() {
 
 }
 
-
-
-
-// ws_webrtc_client.on('connectFailed', function(error) {
-//   console.log('WS Client Connection to WebRTC Server failed: ' + error.toString());
-// })
-
-// ws_webrtc_client.on('connect', function(connection) {
-//   console.log(`WS Client connected to WebRTC Server on port ${webrtc_server_port}`);
-
-
-//   connection.on('error', function (error) {
-//     console.log("Connection Error: " + error.toString());
-//   })
-
-//   connection.on('close', function() {
-//     console.log('echo-protocol Connection Closed');
-//   });
-
-//   connection.on('message', function(message) {
-//     const [err, msg] = safeJsonParse(message.utf8Data); 
-
-//     if (err) {
-//       console.log('Failed to parse JSON: ' + err.message);
-//       // connection.send(JSON.stringify({error: "Failed to parse JSON, invalid JSON structure, go suck an egg."}));
-//     } else {
-//       console.log('[WS WebRTC client] Received data, relaying to [WS Router clients]: %s', msg);
-//       ws_router_server.clients.forEach( function each(client) {
-//         if (client.readyState === WebSocket.OPEN) {
-//           client.send(JSON.stringify(msg));
-//         }
-//       })
-//     }
-//   });
-
-// })
-
 ////////////////////
 //Helper methods
 ////////////////////
 
+//Parse JSON into a dictionary object while
+//catching errors
 function safeJsonParse(data){
   try{
     return [null, JSON.parse(data)];
@@ -169,6 +140,15 @@ function safeJsonParse(data){
   }
 }
 
+//Create an IP Address that can be passed
+//via embedded js (EJS) to the rendered html element 
+function createEJSIPAddr(ip){
+  let ip_replaced = ip;
+  // Example: 192.168.1.23 => 192_168_1_23
+  ip_replaced.replace(/./g, "_");
+  return ip_replaced;
+}
+
 ////////////////////
 //Establish Connections
 ////////////////////
@@ -176,8 +156,8 @@ function safeJsonParse(data){
 
 connectToWebrtcServer();
 
-app.listen(http_port, () => {
-    console.log(`webrtc_router HTTP Server listening on port ${http_port}`)
+app.listen(http_server_port, () => {
+    console.log(`webrtc_router HTTP Server listening on port ${http_server_port}`)
     console.log(`websocket server on port ${ws_server_port}`)
 })
 

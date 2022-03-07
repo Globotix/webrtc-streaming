@@ -1,11 +1,17 @@
+////////////////////////////
+// Server/Client Addresses
+////////////////////////////
+
+let ws_url = null;
+let websocket = null;
+
 //Config 1: Cloud
 let http_server_url = aws_ip_addr + ":" + http_server_port;
 let ws_server_url = "ws://" + aws_ip_addr + ":" + ws_server_port;  
 
-//Config 1: Local
+//Config 2: Local
 let http_server_url_local = "localhost" + ":" + http_server_port;
 let ws_server_url_local = "ws://" + "localhost" + ":" + ws_server_port;  
-
 
 const servers = {
   iceServers: [
@@ -16,47 +22,33 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
+
+///////////////////////
+// HTML elements
+///////////////////////
+
 // Global State
 const peer_connection = new RTCPeerConnection(servers);
 let localStream = null;
 let remoteStream = null;
-let websocket = null;
 let answer_sdp = null;
 let offer_sdp = null;
 let ice_candidate = null;
 
-// HTML elements
-// const webcamButton = document.getElementById('webcamButton');
 const addStreamButton = document.getElementById('addStreamButton')
 const removeStreamButton = document.getElementById('removeStreamButton')
-const askOfferButton = document.getElementById('askOfferButton');
+const getVideoStream = document.getElementById('getVideoStream');
 const remoteVideo = document.getElementById('remoteVideo');
 
-
-
-function getWebSocketServer() {
-  let ws_url;
-  console.log(http_server_url_local)
-  if (window.location.host === http_server_url) {
-    ws_url =  ws_server_url;
-  } else if (window.location.host === http_server_url_local) {
-    ws_url =  ws_server_url_local;
-  } else {
-    throw new Error(`Unsupported host: ${window.location.host}`);
-  }
-
-  console.log(`Connecting to ws: ${ws_url}`)
-  return ws_url;
-}
-
-
-
+/////////////////////////////
+// Button event handlers
+/////////////////////////////
 
 window.addEventListener("DOMContentLoaded", () => {
   //Open the websocket connection and register event handlers
-  websocket = new WebSocket(getWebSocketServer());
-  wsCallback(websocket);
-  peerConnectionICECallback(websocket);
+  connectToWSServer();
+  
+  peerConnectionICECallback();
 
   peer_connection.addEventListener('track', async (event) => {
       const [remoteStream] = event.streams;
@@ -65,21 +57,127 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
-//Listens to message coming in on websockets
-function wsCallback(websocket){
+getVideoStream.onclick = async () => {
+  if (cameraTopic.value == "" || cameraTopic.value == null){
+    console.log("Please input camera ROS Topic if you want to add video stream");
+    return;
+  }
+
+  if (videoStreamID.value == "" || videoStreamID.value == null){
+    console.log("Please input stream ID if you want to remove stream");
+    return;
+  }
+
+  //Add Stream
+  const cfg_add_stream = {
+    type: "configure",
+    actions: [{type: "add_stream", 
+              id: videoStreamID.value }],
+  };
+  console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
+
+  websocket.send(JSON.stringify(cfg_add_stream));
+
+  //Add Video Track to Stream
+  const cfg_add_video_track = {
+    type: "configure",
+    actions: [{type: "add_video_track", 
+              stream_id: videoStreamID.value,
+              id: videoTrackID.value ,
+              src: "ros_image:"+ cameraTopic.value}], // Example ros_image:/ip_front/image_raw_repub
+  };
+  console.log("[getVideoStream.onclick()] Sending Configure/add_video_track");
+  console.log(`streamID.value: ${videoStreamID.value}, videoTrackID.value: ${videoTrackID.value}`);
+
+  websocket.send(JSON.stringify(cfg_add_video_track));
+}
+
+// addStreamButton.onclick = async () => {
+//   if (streamID.value == "" || streamID.value == null){
+//     console.log("Please input stream ID if you want to remove stream");
+//     return;
+//   }
+
+//   const cfg_add_stream = {
+//     type: "configure",
+//     actions: [{type: "add_stream", 
+//               id: streamID.value }],
+//   };
+//   console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
+
+//   websocket.send(JSON.stringify(cfg_add_stream));
+
+//   //Enable/disable buttons
+//   // getVideoStream.disabled = false;
+//   // removeStreamButton.disabled = false;
+
+// }
+
+// removeStreamButton.onclick = async () => {
+//   if (streamID.value == "" || streamID.value == null){
+//     console.log("Please input stream ID if you want to remove stream");
+//     return;
+//   }
+
+//   const cfg_remove_stream = {
+//     type: "configure",
+//     actions: [{type: "remove_stream", 
+//               id: streamID.value }],
+//   };
+//   console.log("[removeStreamButton.onclick()] Sending Configure/remove_stream")
+//   websocket.send(JSON.stringify(cfg_remove_stream));
+// }
+
+
+
+/////////////////////////////
+//Websocket event handlers
+/////////////////////////////
+
+//Open the websocket connection and register event handlers
+function connectToWSServer(){
+
+  if (window.location.host === http_server_url) {
+    ws_url =  ws_server_url;
+  } else if (window.location.host === http_server_url_local) {
+    ws_url =  ws_server_url_local;
+  } else {
+    throw new Error(`Unsupported host: ${window.location.host}`);
+  }
+
+  websocket = new WebSocket(ws_url);
+  
+  websocket.onopen = function(data) {
+    console.log(`Connected to ws (${ws_url}) `)
+  }
+
+  websocket.onclose = function(data) {
+    console.log(`Connection to ws (${ws_url}) closed`)
+  }
+
+  websocket.onerror = function(data) {
+    console.log(`Error connecting to ws (${ws_url})`)
+  }
+
+  //NOTE: Do not name your argument "evt" or "event", you will receive a lot of problems that way
   websocket.addEventListener("message", async ({data}) => {
-    const event = JSON.parse(data);
+    const [err, msg] = safeJsonParse(data); 
 
-    console.log(`[wsCallback] Client received WS Message of type: ${event.type}`);
+    console.log(`[WS Client] received Message of type: ${msg.type}`);
 
-    switch (event.type){
+    if (err) {
+      console.log('[WS Client] Failed to parse JSON: ' + err.message);
+      // connection.send(JSON.stringify({error: "Failed to parse JSON, invalid JSON structure, go suck an egg."}));
+      return;
+    } 
+    
+    switch (msg.type){
 
     case "offer":
-      //Of the format: 
       //{"type": "offer", 
       // "sdp": <string>}
 
-      const offerDescription = event;
+      const offerDescription = msg;
 
       peer_connection.setRemoteDescription(new RTCSessionDescription(offerDescription));
       const answerDescription = await peer_connection.createAnswer();
@@ -98,18 +196,16 @@ function wsCallback(websocket){
       break;
 
     case "ice_candidate":
-      //Of the format: 
       //{"type": "ice_candidate", 
       // "sdp_mid": <string>, 
       // "sdp_mline_index": <int>, 
       // "candiate": <string>,  
-      // }
 
       const ice_candidate = {
-        type: event.type,
-        candidate: event.candidate,
-        sdpMid: event.sdp_mid,
-        sdpMLineIndex: event.sdp_mline_index,
+        type: msg.type,
+        candidate: msg.candidate,
+        sdpMid: msg.sdp_mid,
+        sdpMLineIndex: msg.sdp_mline_index,
       };
 
       //Add candidate to peer connection
@@ -127,23 +223,35 @@ function wsCallback(websocket){
       break;
     
     default:
-      console.error(`[wsCallback] Unrecognized Message of type ${event.type}`);
+      console.error(`[wsCallback] Unrecognized Message of type ${msg.type}`);
     }
      
   });
+
+}
+
+////////////////////////////
+//Helper Functions
+////////////////////////////
+
+
+//Parse JSON into a dictionary object while
+//catching errors
+function safeJsonParse(data){
+  try{
+    return [null, JSON.parse(data)];
+  }
+  catch (err){
+    return [err];
+  }
 }
 
 //Listens for local ICE Candidates on the local RTCPeerConnection
-function peerConnectionICECallback(websocket){
+function peerConnectionICECallback(){
   peer_connection.addEventListener('icecandidate', event => {
 
     if (event.candidate) {
-      // console.log("[peerConnectionICECallback] Received Ice candidate!")
-      // console.log(JSON.stringify(event.candidate))
-
-      // {"candidate":"candidate:4260616049 1 udp 2113937151 f300c8fb-9f2e-4cba-b591-7fb32d6bdbbf.
-      // local 35096 typ host generation 0 
-      // ufrag QF1E network-cost 999",
+      // {"candidate":"candidate:4260616049 1 udp 2113937151 f300c8fb-9f2e-4cba-b591-7fb32d6bdbbf.local 35096 typ host generation 0 ufrag QF1E network-cost 999",
       // "sdpMid":"video",
       // "sdpMLineIndex":0}
 
@@ -154,9 +262,8 @@ function peerConnectionICECallback(websocket){
         sdp_mline_index: event.candidate.sdpMLineIndex,
       };
 
-      // console.log(JSON.stringify(ice_candidate))
-
       console.log("[peerConnectionICECallback] Sent Ice candidate!")
+      // console.log(JSON.stringify(event.candidate))
       websocket.send(JSON.stringify(ice_candidate));
     }
   });
@@ -165,61 +272,6 @@ function peerConnectionICECallback(websocket){
     if (peer_connection.connectionState === 'connected') {
       console.log("Peers connected!");
     }
-});
+  });
 
 }
-
-addStreamButton.onclick = async () => {
-  if (streamID.value == "" || streamID.value == null){
-    console.log("Please input stream ID if you want to remove stream");
-    return;
-  }
-
-  const cfg_add_stream = {
-    type: "configure",
-    actions: [{type: "add_stream", 
-              id: streamID.value }],
-  };
-  console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
-
-  websocket.send(JSON.stringify(cfg_add_stream));
-
-  //Enable/disable buttons
-  askOfferButton.disabled = false;
-  removeStreamButton.disabled = false;
-
-}
-
-removeStreamButton.onclick = async () => {
-  if (streamID.value == "" || streamID.value == null){
-    console.log("Please input stream ID if you want to remove stream");
-    return;
-  }
-
-  const cfg_remove_stream = {
-    type: "configure",
-    actions: [{type: "remove_stream", 
-              id: streamID.value }],
-  };
-  console.log("[removeStreamButton.onclick()] Sending Configure/remove_stream")
-  websocket.send(JSON.stringify(cfg_remove_stream));
-}
-
-askOfferButton.onclick = async () => {
-  if (cameraTopic.value == "" || cameraTopic.value == null){
-    console.log("Please input camera ROS Topic if you want to add video stream");
-    return;
-  }
-
-  const cfg_add_video_track = {
-    type: "configure",
-    actions: [{type: "add_video_track", 
-              stream_id: streamID.value,
-              id: streamID.value ,
-              src: "ros_image:"+ cameraTopic.value}], // Example ros_image:/ip_front/image_raw_repub
-  };
-  console.log("[askOfferButton.onclick()] Sending Configure/add_video_track")
-  websocket.send(JSON.stringify(cfg_add_video_track))
-}
-
-

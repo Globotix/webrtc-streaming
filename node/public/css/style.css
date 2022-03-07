@@ -8,9 +8,9 @@ body {
 }
 
 video {
-    width: 40vw;
-    height: 30vw;
-    margin: 2rem;
+    width: 50vw;
+    height: 40vw;
+    /* margin: 2rem; */
     background: #2c3e50;
 }
 

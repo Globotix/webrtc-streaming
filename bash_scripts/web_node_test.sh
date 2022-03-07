@@ -23,6 +23,8 @@ tmux send-keys -t 0.0 "google-chrome http://localhost:8011" C-m
 #Launch webrtc server and robot_router
 tmux send-keys -t 0.1 "roslaunch webrtc_router webrtc_test_node.launch" C-m
 
+sleep 3;
+
 #For Websocket debugging
 tmux send-keys -t 0.2 "roscd webrtc_router/node && npm run start" C-m
 

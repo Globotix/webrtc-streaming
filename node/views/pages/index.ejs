@@ -33,7 +33,8 @@
     <!-- Add in constants passed down from nodejs -->
     <script>
       const ws_port = <%= ws_server_port %>;
-      const http_port = <%= http_port %>;
+      const http_port = <%= http_server_port %>;
+      const ip_addr = <%= aws_ip_addr %>
     </script>
 
     <script type="module" src="/js/main.js"></script>

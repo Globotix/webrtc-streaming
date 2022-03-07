@@ -93,6 +93,9 @@ The messages that are exchanged between the answerer and caller will be detailed
     actions: [{ type: "add_stream", 
                 id: <int> }],
 }
+
+//Example
+{ "type": "configure", "actions": [{"type": "add_stream", "id": "admin" }]}
 ```
 
 2. **Answerer** receives offer from **Caller**:

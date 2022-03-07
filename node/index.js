@@ -126,7 +126,6 @@ function connectToWebrtcServer() {
     ws_webrtc_client.close();
   };
 
-
 }
 
 ////////////////////

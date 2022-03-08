@@ -1,13 +1,18 @@
 <launch>
   <!-- Argument(s) -->
   <arg name="webrtc_port" default="8013" />
-  <arg name="use_ip_camera" default="true" />
+  <arg name="use_ip_camera" default="false" />
   <arg name="use_rgb_camera" default="true" />
   <arg name="use_back_camera" default="false" />
+  <arg name="use_realsense" default="false" />
   <arg name="ip_topic_in" default="/ip_front/image_raw" />
   <arg name="ip_topic_out" default="/ip_front/image_raw_repub" />
   <arg name="rgb_topic_in" default="/rgb_front/usb_cam/image_raw" />
   <arg name="rgb_topic_out" default="/rgb_front/usb_cam/image_raw_repub" />
+  <arg name="rgbd_SL_topic_in" default="/rgbd_SL/color/image_raw" />
+  <arg name="rgbd_SL_topic_out" default="/rgbd_SL/color/image_raw_repub" />
+  <arg name="rgbd_SR_topic_in" default="/rgbd_SR/color/image_raw" />
+  <arg name="rgbd_SR_topic_out" default="/rgbd_SR/color/image_raw_repub" />
 
   <!-- ICE: STUN/TURN Server -->
   <node name="ice_server_provider" pkg="webrtc_ros" type="ice_server_service.py">
@@ -27,22 +32,30 @@
     <param name="port" value="$(arg webrtc_port)" />
   </node>
 
+  <!-- Image Transport -->
+  <node pkg="image_transport" type="republish" name="ip_front_image_transport" args="theora in:=$(arg ip_topic_in) out:=$(arg ip_topic_out) _image_transport:=compressed" />
+  <node pkg="image_transport" type="republish" name="rgb_front_image_transport" args="theora in:=$(arg rgb_topic_in) out:=$(arg rgb_topic_out) _image_transport:=compressed" />
+  <node pkg="image_transport" type="republish" name="rgbd_SL_image_transport" args="theora in:=$(arg rgbd_SL_topic_in) out:=$(arg rgbd_SL_topic_out) _image_transport:=compressed" />
+  <node pkg="image_transport" type="republish" name="rgbd_SR_image_transport" args="theora in:=$(arg rgbd_SR_topic_in) out:=$(arg rgbd_SR_topic_out) _image_transport:=compressed" />
+
   <!-- IP Cameras -->
-  <group ns="ip_front" if="$(arg use_ip_camera)">
+  <group if="$(arg use_ip_camera)">
     <include file="$(find flexa_bringup)/launch/includes/ip_camera.launch.xml">
       <arg name="use_back_camera" value="$(arg use_back_camera)" />
     </include>
-    <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg ip_topic_in) out:=$(arg ip_topic_out) _image_transport:=compressed" />
   </group>
 
   <!-- HD Cameras -->
   <group if="$(arg use_rgb_camera)">
     <include file="$(find flexa_bringup)/launch/includes/surveillance_camera.launch.xml">
-      <arg name="use_mjpeg" value="false"/>
+      <arg name="use_mjpeg" value="false" />
       <arg name="framerate" value="30" />
       <arg name="front_video_stream" value="video0" />
     </include>
-    <node pkg="image_transport" type="republish" name="image_transport_repub" args="theora in:=$(arg rgb_topic_in) out:=$(arg rgb_topic_out) _image_transport:=compressed" />
   </group>
 
+  <!-- RealSense Cameras -->
+  <group if="$(arg use_realsense)">
+    <include file="$(find flexa_videos)/launch/rgbd_side_test.launch" />
+  </group>
 </launch>

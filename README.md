@@ -1,15 +1,13 @@
-# 1 Introduction
-Acts as a signalling server for WebRTC. 
-Relays SDP and ICE Candidates between caller and answerers.
+# Introduction
+Acts as a signalling server for WebRTC. Relays SDP and ICE Candidates between caller and answerers.
 
-
-# 2 First time set-up
+# Set-Up
 ```sh
 #Install dependencies
 pip install -r requirements.txt
 ```
 
-# 3 Quick Start
+# Quick Start
 ```sh
 #Test 1: with locally hosted webpage and webrtc_ros only
 rosrun webrtc_router local_simple_test.sh
@@ -25,24 +23,27 @@ rosrun webrtc_router local_nodejs_test.sh
 
 ```
 
-# 4 Deployment
+# Deployment
 
-## 4.1 Deployment Method 1: Web without VPN 
-
-### 4.1.1 (Only for First Time) Host Websocket broadcaster on Heroku
+## Deployment Method 1: Web without VPN 
 ```sh
-#Create heroku app
+# Can we remove this section if it is not in use
+```
+### (Only for First Time) Host Websocket broadcaster on Heroku
+```sh
+# Create heroku app
 heroku create globotix-stream
 
-#Push up to heroku git repo and server
+# Push up to heroku git repo and server
 git push heroku
 
-#Test websocket server with interactive client
+# Test websocket server with interactive client
 python -m websockets wss://globotix-stream.herokuapp.com/
 ```
 
 ### 4.1.2 Host your webpage (index.html) on github Pages
 ```sh
+# Is this a real command?
 Go figure
 ```
 

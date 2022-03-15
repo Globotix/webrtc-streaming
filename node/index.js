@@ -1,11 +1,13 @@
 const WebSocket = require('ws');
-
 const path = require('path');
 const config = require('dotenv').config(); //For sourcing .env config file
-
 var express = require('express');
 var http = require('http')
+
+// Express is an open sourced server, it's the E --> (MERN)
 var app = express();
+
+// We are going to use ejs (nodejs)
 app.set('view engine', 'ejs');
 
 /////////////////
@@ -13,7 +15,6 @@ app.set('view engine', 'ejs');
 /////////////////
 const robot_ip_addr = String(process.env.ROBOT_IP_ADDR) || "192.168.69.101";
 const aws_ip_addr = String(process.env.AWS_IP_ADDR) || "52.74.175.195";
-
 const http_server_port = process.env.HTTP_PORT || 8011;
 const ws_server_port = process.env.WS_SERVER_PORT || 8012;
 const webrtc_server_port = process.env.WEBRTC_SERVER_PORT || 8013;
@@ -29,15 +30,14 @@ const ws_router_server = new WebSocket.Server({
 let ws_webrtc_client;
 let webrtc_conn_timeout = 1000;
 
-//Set up express router
-app.use(express.static(path.join(__dirname, 'public'))); 
-app.use(express.json());                        // Parse requests of content-type - application/json
-app.use(express.urlencoded({ extended: true })); // Parse requests of content-type - appplication/x-www-form-urlencoded
+// Set up express router
+app.use(express.static(path.join(__dirname, 'public')));  // Find all your resources in this folder
+app.use(express.json());                                  // Parse requests of content-type - application/json
+app.use(express.urlencoded({ extended: true }));          // Parse requests of content-type - appplication/x-www-form-urlencoded
 
 /////////////////////////
 //HTTP Request handling
 /////////////////////////
-
 /**
  * GET METHODS
  */
@@ -55,18 +55,17 @@ app.get('/', function (req, res){
               {addr_info: addr_info} );
 })
 
-app.get('/suck_an_egg', function (req, res){
+app.get('/test', function (req, res){
     const url = req.protocol + '://' + req.get('host') + req.originalUrl;
     res.statusCode = 200;
     res.setHeader('Content-Type', 'text/plain');
-    res.end(`User on requested url ${url} can go suck an egg`)
+    res.end(`Hello, how have you been dear user? You have requested ${url}`)
 })
 
 
 ////////////////////
 //Websocket handling
 ////////////////////
-
 ws_router_server.on('connection', function connection(ws) {
 
   //Connection to server can tested with "python3 -m websockets ws://localhost:7071"
@@ -129,11 +128,11 @@ function connectToWebrtcServer() {
 }
 
 ////////////////////
-//Helper methods
+// Helper methods
 ////////////////////
 
-//Parse JSON into a dictionary object while
-//catching errors
+// Parse JSON into a dictionary object while
+// catching errors
 function safeJsonParse(data){
   try{
     return [null, JSON.parse(data)];
@@ -145,10 +144,8 @@ function safeJsonParse(data){
 
 
 ////////////////////
-//Establish Connections
+// Establish Connections
 ////////////////////
-
-
 connectToWebrtcServer();
 
 app.listen(http_server_port, () => {

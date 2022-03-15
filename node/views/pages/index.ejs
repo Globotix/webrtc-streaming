@@ -4,8 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Globotix Streaming</title>
-
+    <title>WebRTC Streaming Example</title>
     <link rel="stylesheet" href="/css/style.css">
   </head>
 
@@ -23,6 +22,7 @@
     <h3>Start Stream</h3>
     <p>Camera Topic, video stream ID, video track ID</p>
     <p>Example Camera Topic Input: /ip_front/image_raw_repub, /rgb_front/usb_cam/image_raw_repub, /rgbd_SL/color/image_raw_repub, /rgbd_SR/color/image_raw_repub</p>
+
     <input id="cameraTopic" value="/rgb_front/usb_cam/image_raw_repub">
     <input id="videoStreamID" value="client_ui_stream">
     <input id="videoTrackID" value="front_camera">
@@ -30,7 +30,6 @@
 
     <!-- <h3>Remove stream</h3>
     <button id="removeStreamButton" >Remove stream</button> -->
-
 
     <!-- Add in constants passed down from nodejs -->
     <script>
@@ -40,7 +39,6 @@
         const http_server_port = addr_info_json.http_server_port;
         const aws_ip_addr = addr_info_json.aws_ip_addr;
       <% } %>
-
     </script>
 
     <!-- Above variables are being passes into main.js  -->

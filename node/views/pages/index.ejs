@@ -20,7 +20,7 @@
     <input id="streamID" />
     <button id="addStreamButton" >Add Stream</button> -->
 
-    <h3>Add Video Stream</h3>
+    <h3>Start Stream</h3>
     <p>Camera Topic, video stream ID, video track ID</p>
     <p>Example Camera Topic Input: /ip_front/image_raw_repub, /rgb_front/usb_cam/image_raw_repub, /rgbd_SL/color/image_raw_repub, /rgbd_SR/color/image_raw_repub</p>
     <input id="cameraTopic" value="/rgb_front/usb_cam/image_raw_repub">
@@ -34,7 +34,6 @@
 
     <!-- Add in constants passed down from nodejs -->
     <script>
-
       <% if(addr_info) { %>
         const addr_info_json = <%- JSON.stringify(addr_info) %>;
         const ws_server_port = addr_info_json.ws_server_port;
@@ -44,6 +43,7 @@
 
     </script>
 
+    <!-- Above variables are being passes into main.js  -->
     <script type="module" src="/js/main.js"></script>
 
   </body>

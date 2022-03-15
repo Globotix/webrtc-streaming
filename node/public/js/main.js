@@ -1,18 +1,18 @@
 ////////////////////////////
 // Server/Client Addresses
 ////////////////////////////
-
 let ws_url = null;
 let websocket = null;
 
-//Config 1: Cloud
+// Config 1: Cloud
 let http_server_url = aws_ip_addr + ":" + http_server_port;
 let ws_server_url = "ws://" + aws_ip_addr + ":" + ws_server_port;  
 
-//Config 2: Local
+// Config 2: Local
 let http_server_url_local = "localhost" + ":" + http_server_port;
 let ws_server_url_local = "ws://" + "localhost" + ":" + ws_server_port;  
 
+// Stun servers to be used. Using google because it's awesome
 const servers = {
   iceServers: [
     {
@@ -23,10 +23,6 @@ const servers = {
 };
 
 
-///////////////////////
-// HTML elements
-///////////////////////
-
 // Global State
 const peer_connection = new RTCPeerConnection(servers);
 let localStream = null;
@@ -35,21 +31,21 @@ let answer_sdp = null;
 let offer_sdp = null;
 let ice_candidate = null;
 
+// DOM
 const addStreamButton = document.getElementById('addStreamButton')
 const removeStreamButton = document.getElementById('removeStreamButton')
 const getVideoStream = document.getElementById('getVideoStream');
 const remoteVideo = document.getElementById('remoteVideo');
 
-/////////////////////////////
-// Button event handlers
-/////////////////////////////
-
+// Event fires when the initial HTML document has been completely loaded and parsed, without waiting for stylesheets, images, and subframes to finish loading.
 window.addEventListener("DOMContentLoaded", () => {
-  //Open the websocket connection and register event handlers
+  // Open the websocket connection and register event handlers
   connectToWSServer();
-  
+
+  // Set up 2 event listeners, one to send the ICE info and second to register successful connection
   peerConnectionICECallback();
 
+  // 
   peer_connection.addEventListener('track', async (event) => {
       const [remoteStream] = event.streams;
       remoteVideo.srcObject = remoteStream;
@@ -134,12 +130,13 @@ getVideoStream.onclick = async () => {
 //Websocket event handlers
 /////////////////////////////
 
-//Open the websocket connection and register event handlers
+// Open the websocket connection and register event handlers
 function connectToWSServer(){
-
   if (window.location.host === http_server_url) {
+    // Check if this is aws
     ws_url =  ws_server_url;
   } else if (window.location.host === http_server_url_local) {
+    // Check if this is local host
     ws_url =  ws_server_url_local;
   } else {
     throw new Error(`Unsupported host: ${window.location.host}`);
@@ -231,23 +228,23 @@ function connectToWSServer(){
 }
 
 ////////////////////////////
-//Helper Functions
+// Helper Functions
 ////////////////////////////
-
-
 //Parse JSON into a dictionary object while
 //catching errors
 function safeJsonParse(data){
-  try{
+  try {
     return [null, JSON.parse(data)];
   }
-  catch (err){
-    return [err];
+  catch (err) {
+    return [err, null];
   }
 }
 
-//Listens for local ICE Candidates on the local RTCPeerConnection
+// Listens for local ICE Candidates on the local RTCPeerConnection
 function peerConnectionICECallback(){
+
+  // This first listener is to send the ice candidate information
   peer_connection.addEventListener('icecandidate', event => {
 
     if (event.candidate) {
@@ -262,12 +259,14 @@ function peerConnectionICECallback(){
         sdp_mline_index: event.candidate.sdpMLineIndex,
       };
 
-      console.log("[peerConnectionICECallback] Sent Ice candidate!")
+      console.log("[peerConnectionICECallback] Sent Ice candidate to receiver!")
       // console.log(JSON.stringify(event.candidate))
       websocket.send(JSON.stringify(ice_candidate));
     }
+
   });
 
+  // Confirm that a successful connection has been made
   peer_connection.addEventListener('connectionstatechange', event => {
     if (peer_connection.connectionState === 'connected') {
       console.log("Peers connected!");

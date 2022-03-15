@@ -49,6 +49,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 });
 
+// When the getVideoStream is clicked
 getVideoStream.onclick = async () => {
   if (cameraTopic.value == "" || cameraTopic.value == null) {
     console.log("Please input camera ROS Topic if you want to add video stream");
@@ -60,7 +61,7 @@ getVideoStream.onclick = async () => {
     return;
   }
 
-  //Add Stream
+  // Add Stream
   const cfg_add_stream = {
     type: "configure",
     actions: [{
@@ -68,11 +69,12 @@ getVideoStream.onclick = async () => {
       id: videoStreamID.value
     }],
   };
+
   console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
 
   websocket.send(JSON.stringify(cfg_add_stream));
 
-  //Add Video Track to Stream
+  // Add Video Track to Stream
   const cfg_add_video_track = {
     type: "configure",
     actions: [{
@@ -82,6 +84,7 @@ getVideoStream.onclick = async () => {
       src: "ros_image:" + cameraTopic.value
     }], // Example ros_image:/ip_front/image_raw_repub
   };
+  
   console.log("[getVideoStream.onclick()] Sending Configure/add_video_track");
   console.log(`streamID.value: ${videoStreamID.value}, videoTrackID.value: ${videoTrackID.value}`);
 
@@ -102,10 +105,6 @@ getVideoStream.onclick = async () => {
 //   console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
 
 //   websocket.send(JSON.stringify(cfg_add_stream));
-
-//   //Enable/disable buttons
-//   // getVideoStream.disabled = false;
-//   // removeStreamButton.disabled = false;
 
 // }
 

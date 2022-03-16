@@ -51,12 +51,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
 // When the getVideoStream is clicked
 getVideoStream.onclick = async () => {
-  if (cameraTopic.value == "" || cameraTopic.value == null) {
+  if (cameraTopic.value === "" || cameraTopic.value === null) {
     console.log("Please input camera ROS Topic if you want to add video stream");
     return;
   }
 
-  if (videoStreamID.value == "" || videoStreamID.value == null) {
+  if (videoStreamID.value === "" || videoStreamID.value === null) {
     console.log("Please input stream ID if you want to remove stream");
     return;
   }

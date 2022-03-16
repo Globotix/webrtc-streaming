@@ -14,7 +14,7 @@ const webrtc_ws_url = 'ws://' + robot_ip_addr + ":" + webrtc_server_port + '/web
 // Set up clients
 let webrtc_ws_client;
 let webrtc_conn_timeout = 1000;
-let timeout_function; 
+let timeout_function;
 
 // Set up a websocket server on port 8012
 const ws_router_server = new WebSocket.Server({
@@ -29,24 +29,26 @@ app.use(express.json());                                  // Parse requests of c
 app.use(express.urlencoded({ extended: true }));          // Parse requests of content-type - appplication/x-www-form-urlencoded
 
 // HTTP Request handling
-app.get('/', function (req, res){
+app.get('/', function (req, res) {
   console.log(`UI Client with IP Address ${req.ip} is connected`);
 
   // As a matter of design define these variables here and pass them down to the javascript via ejs syntaxing
-  addr_info = {aws_ip_addr: aws_ip_addr, 
-              robot_ip_addr: robot_ip_addr,
-              ws_server_port: String(ws_server_port), 
-              http_server_port: String(http_server_port)};
-  
-  res.render('pages/index', 
-              {addr_info: addr_info} );
+  addr_info = {
+    aws_ip_addr: aws_ip_addr,
+    robot_ip_addr: robot_ip_addr,
+    ws_server_port: String(ws_server_port),
+    http_server_port: String(http_server_port)
+  };
+
+  res.render('pages/index',
+    { addr_info: addr_info });
 })
 
-app.get('/test', function (req, res){
-    const url = req.protocol + '://' + req.get('host') + req.originalUrl;
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(`Hello, how have you been dear user? You have requested ${url}`)
+app.get('/test', function (req, res) {
+  const url = req.protocol + '://' + req.get('host') + req.originalUrl;
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end(`Hello, how have you been dear user? You have requested ${url}`)
 })
 
 app.listen(http_server_port, () => {
@@ -74,12 +76,12 @@ ws_router_server.on('connection', function connection(ws) {
 function connectToWebrtcServer() {
   webrtc_ws_client = new WebSocket(webrtc_ws_url);
 
-  webrtc_ws_client.onopen = function(){
+  webrtc_ws_client.onopen = function () {
     console.log(`[WS WebRTC client] Connected to Websocket located on WebRTC Server on port: ${webrtc_server_port}`);
   }
-  
-  webrtc_ws_client.onmessage = function(message){
-    const [err, msg] = safeJsonParse(message.data); 
+
+  webrtc_ws_client.onmessage = function (message) {
+    const [err, msg] = safeJsonParse(message.data);
 
     if (err) {
       console.log('[WS WebRTC client] Failed to parse JSON from WebRTC Server: ' + err.message);
@@ -87,7 +89,7 @@ function connectToWebrtcServer() {
     } else {
       console.log('[WS WebRTC client] Received data: %s via Websocket from WebRTC Server. Relaying this information to all Router clients', msg);
 
-      ws_router_server.clients.forEach( function each(client) {
+      ws_router_server.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
           // Send the data received from 'WebRTC server' Websocket to all router clients
           client.send(JSON.stringify(msg));
@@ -96,31 +98,31 @@ function connectToWebrtcServer() {
     }
   }
 
-  webrtc_ws_client.onclose = function(err) {
+  webrtc_ws_client.onclose = function (err) {
     console.log(`[WS WebRTC client] is closed. Attempting reconnection in ${webrtc_conn_timeout} seconds : ${err.reason}`);
     // WARNING! Delete won't free up memory but allows the garbage collector to find the deleted objects when the memory is low.
     // Refer to [https://stackoverflow.com/questions/11981634/understanding-object-creation-and-garbage-collection-of-a-nodejs-websocket-serve/11982071#11982071]
-    delete webrtc_ws_client; 
+    delete webrtc_ws_client;
 
     // Clear any previous just in case this .onclose event triggers consecutively
     clearTimeout(timeout_function)
-    timeout_function = setTimeout(function() {
+    timeout_function = setTimeout(function () {
       connectToWebrtcServer();
-    }, webrtc_conn_timeout );
+    }, webrtc_conn_timeout);
   };
 
-  webrtc_ws_client.onerror = function(err) {
+  webrtc_ws_client.onerror = function (err) {
     console.error('[WS WebRTC client] encountered error: ', err.message, 'Closing connection');
     webrtc_ws_client.close();
   };
 }
 
 // Parse JSON into a list and catch errors if necessary
-function safeJsonParse(data){
-  try{
+function safeJsonParse(data) {
+  try {
     return [null, JSON.parse(data)];
   }
-  catch (err){
+  catch (err) {
     return [err];
   }
 }

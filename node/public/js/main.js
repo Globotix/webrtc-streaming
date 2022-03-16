@@ -69,7 +69,7 @@ getVideoStream.onclick = async () => {
       id: videoStreamID.value
     }],
   };
-
+  
   console.log("[addStreamButton.onclick()] Sending Configure/add_stream")
 
   websocket.send(JSON.stringify(cfg_add_stream));
@@ -84,7 +84,7 @@ getVideoStream.onclick = async () => {
       src: "ros_image:" + cameraTopic.value
     }], // Example ros_image:/ip_front/image_raw_repub
   };
-  
+
   console.log("[getVideoStream.onclick()] Sending Configure/add_video_track");
   console.log(`streamID.value: ${videoStreamID.value}, videoTrackID.value: ${videoTrackID.value}`);
 

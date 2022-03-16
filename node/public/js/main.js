@@ -27,11 +27,7 @@ const servers = {
 
 // Global State
 const peer_connection = new RTCPeerConnection(servers);
-let localStream = null;
 let remoteStream = null;
-let answer_sdp = null;
-let offer_sdp = null;
-let ice_candidate = null;
 
 // DOM
 const addStreamButton = document.getElementById('addStreamButton')

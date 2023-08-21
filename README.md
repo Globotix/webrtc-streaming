@@ -1,5 +1,6 @@
 # Introduction
-ARCHIVED - Currently is not being used anymore in the Flexa Robot
+ARCHIVED - Currently is not being used anymore in the Flexa Robot. This is used as the initial streaming services for Flexa in Prototype B1 and B2
+
 Acts as a signalling server for WebRTC. Relays SDP and ICE Candidates between caller and answerers.
 
 # Set-Up

@@ -1,4 +1,5 @@
 # Introduction
+ARCHIVED - Currently is not being used anymore in the Flexa Robot
 Acts as a signalling server for WebRTC. Relays SDP and ICE Candidates between caller and answerers.
 
 # Set-Up
